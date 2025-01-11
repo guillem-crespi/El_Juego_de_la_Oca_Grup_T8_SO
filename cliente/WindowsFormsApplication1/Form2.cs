@@ -7,8 +7,11 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Drawing.Text;
 using System.Linq;
+using System.Net.Sockets;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -16,66 +19,181 @@ namespace WindowsFormsApplication1
 {
     public partial class Form2 : Form
     {
-        private int sumaTotal = 0;  // Variable para almacenar la suma total de los dados
-        private List<Point> posicionesResaltadas = new List<Point>();   // Lista para almacenar posiciones resaltadas
+        Socket server;
         PictureBox tablero = new PictureBox();  //Imatge del tauler
         private List<int> casillas = new List<int>();
         private List<int> casillasJugador = new List<int>();
-        private List<int> posiciones = new List<int>();
-        private int nJugador;    //Numero de jugador (1, 2, 3 o 4)
+        private List<int> posiciones = new List<int>(new int[] { 0, 0, 0, 0 });
+        private float resolution = 1.0f;
+        private int Player;         //Numero de jugador (1, 2, 3 o 4)
+        private int nJugador = 1;   //Numero de jugador que li toca tirar
+        private string J1;
+        private string J2;
+        private string J3;
+        private string J4;
+        private int nForm;
+        private int nPartida;
+        
+        bool pozo1 = false;
+        bool pozo2 = false;
+        bool pozo3 = false;
+        bool pozo4 = false;
+        int Turnos1 = 0;    //Torns de penalització pel jugador 1
+        int Turnos2 = 0;    //Torns de penalització pel jugador 2
+        int Turnos3 = 0;    //Torns de penalització pel jugador 3
+        int Turnos4 = 0;    //Torns de penalització pel jugador 4
 
-        public Form2()
+
+        public Form2(int nJugador, int nForm, Socket server, string J1, string J2, string J3, string J4, int nPartida)
         {
+            this.Player = nJugador;
+            this.nForm = nForm;
+            this.server = server;
+            this.J1 = J1;
+            this.J2 = J2;
+            this.J3 = J3;
+            this.J4 = J4;
+            this.nPartida = nPartida;
             InitializeComponent();
         }
 
         private void Form2_Load(object sender, EventArgs e)
-
         {
-            // Configurar el DataGridView como un tablero de 7 filas y 9 columnas
-            matriz.ColumnCount = 9;
-            matriz.RowCount = 7;
-            matriz.ColumnHeadersVisible = false;
-            matriz.RowHeadersVisible = false;
-            matriz.AutoSizeColumnsMode = DataGridViewAutoSizeColumnsMode.None;
-            matriz.BorderStyle = BorderStyle.None;
-            matriz.ClearSelection();
+            CrearTablero();
 
-            // Tamaño de las celdas
-            int cellHeight = 35; // Altura de las filas
-            int cellWidth = 55;  // Ancho de las columnas
+            if (J4 == "NO")
+            {
+                Turnos4 = -1;
 
-            // Ajustar el tamaño de las celdas
-            for (int i = 0; i < matriz.RowCount; i++)
-            {
-                matriz.Rows[i].Height = cellHeight; // Altura de las filas
-            }
-            for (int j = 0; j < matriz.ColumnCount; j++)
-            {
-                matriz.Columns[j].Width = cellWidth; // Ancho de las columnas
+                if (J3 == "NO")
+                {
+                    Turnos3 = -1;
+                }
             }
 
-           
-            matriz.Location = new Point(20, 200); // Ajustar la ubicación según sea necesario
-            matriz.Size = new Size(500, 250); // Ajustar el tamaño total del DataGridView
+            if (Player == 1)
+            {
+                button_Dados.Enabled = true;
+            }
+            else
+            {
+                button_Dados.Enabled = false;
+            }
 
-            // Añadir la matriz al formulario para que sea visible
-            Controls.Add(matriz);
+            nJugadorLbl.Text = Convert.ToString(Player);
+        }
 
-            // Asignar posiciones a cada celda
-            AsignarPosiciones();
 
-            //Creacio del tauler
-            tablero.ClientSize = new Size(700, 700);
+        public int GetPartidaNum()
+        {
+            return nPartida;
+        }
+
+        public int GetFormNum()
+        {
+            return nForm;
+        }
+
+        private void button_Dados_Click(object sender, EventArgs e)
+        {
+            Random random = new Random();
+            int resultado = random.Next(1, 7);
+            int resultado2 = random.Next(1, 7);
+            button_Dados.Enabled = false;
+
+            string mensaje = $"20/{nPartida}/{resultado}/{resultado2}/{J1}/{J2}/{J3}/{J4}";
+            byte[] msg = Encoding.ASCII.GetBytes(mensaje);
+            server.Send(msg);
+        }
+
+        public void SetDados(int D1, int D2)
+        {
+            Invoke(new Action(() =>
+            {
+                MoverFicha(D1, D2);
+            }));
+        }
+
+        public void QuitOut(string J1, string J2, string J3, string J4)
+        {
+            Invoke(new Action(() =>
+            {
+                UpdatePlayers(J1, J2, J3, J4);
+            }));
+        }
+
+        private void UpdatePlayers(string J1, string J2, string J3, string J4)
+        {
+            this.J1 = J1;
+            this.J2 = J2;
+            this.J3 = J3;
+            this.J4 = J4;
+
+            int c = 0;
+
+            if (J1 == "NO")
+            {
+                c++;
+                Turnos1 = -1;
+
+                if (nJugador == 1)
+                {
+                    SetDados(0, 0);
+                }
+            }
+
+            if (J2 == "NO")
+            {
+                c++;
+                Turnos2 = -1;
+
+                if (nJugador == 2)
+                {
+                    SetDados(0, 0);
+                }
+            }
+
+            if (J3 == "NO")
+            {
+                c++;
+                Turnos3 = -1;
+
+                if (nJugador == 3)
+                {
+                    SetDados(0, 0);
+                }
+            }
+
+            if (J4 == "NO")
+            {
+                c++;
+                Turnos4 = -1;
+
+                if (nJugador == 4)
+                {
+                    SetDados(0, 0);
+                }
+            }
+
+
+            if (c == 3)
+            {
+                //Jugador ha guanyat perquè els altres han abandonat
+                MessageBox.Show($"Has ganado jugador {Player} porque todos han abandonado");
+            }
+        }
+
+        private void CrearTablero()
+        {
+            //Creació del tauler
+            tablero.ClientSize = new Size((int)(resolution * 1000), (int)(resolution * 1000));
             tablero.Location = new Point(0, 0);
             tablero.SizeMode = PictureBoxSizeMode.StretchImage;
             tablero.Image = Image.FromFile("Oca.jpg");
             panel1.Controls.Add(tablero);
 
-            tablero.Paint += new PaintEventHandler(tablero_Paint);  //Funció per pintar la imatge
-
             //Definicio dels punts en els que es pintaran les peces
-            casillas.AddRange(new int[] {   50, 50, 355, 438, 525, 606, 695, 777, 858,
+            casillas = new List<int>(new int[] {   50, 50, 355, 438, 525, 606, 695, 777, 858,
                                             855, 775, 697, 615, 530, 443, 357, 275, 198, 110,
                                             850, 775, 698, 615, 530, 443, 356, 270, 190, 111,
                                             114, 195, 275, 357, 444, 530, 612, 688,
@@ -87,183 +205,365 @@ namespace WindowsFormsApplication1
 
             for (int i = 0; i < casillas.Count; i++)
             {
-                casillas[i] = (int)(casillas[i] * 0.7);
+                casillas[i] = (int)(casillas[i] * resolution);
             }
 
-            casillasJugador.AddRange(new int[] { 920, 963, 960, 10, 2, 795, 792, 173, 170, 627 });
+            casillasJugador = new List<int>(new int[] { 920, 963, 960, 10, 2, 795, 792, 173, 170, 627 });
 
-            for (int i = 0;i < casillasJugador.Count; i++)
+            for (int i = 0; i < casillasJugador.Count; i++)
             {
-                casillasJugador[i] = (int)(casillasJugador[i] * 0.7);
+                casillasJugador[i] = (int)(casillasJugador[i] * resolution);
             }
 
-            posiciones.AddRange(new int[] { 0, 0, 0, 0 });
+            tablero.Paint += new PaintEventHandler(tablero_Paint);  //Funció per pintar la imatge
         }
 
-        private void button_Dados_Click(object sender, EventArgs e)
+        private void MoverFicha(int D1, int D2)
         {
-            Random random = new Random();
+            bool online = true;
+            bool volverATirar = false;
+            int pierdeTurno = 0;
+            bool pozo = false;
+            bool saltar = true;
 
-            // Genera dos número aleatorio entre 1 y 6
-            int resultado = random.Next(1, 7); 
-            int resultado2 = random.Next(1, 7);
-            Resultado.Text = resultado.ToString(); 
-            Resultado2.Text = resultado2.ToString();
+            Resultado.Text = D1.ToString();
+            Resultado2.Text = D2.ToString();
 
             // Suma de los dos resultados
-            int suma = resultado + resultado2;
-            sumaTotal += suma;
+            int suma = D1 + D2;
             SumaResultado.Text = suma.ToString();
-
-            ResaltarCelda(sumaTotal);
 
             if (radioButton1.Checked)
                 nJugador = 1;
-
             else if (radioButton2.Checked)
                 nJugador = 2;
-            
             else if (radioButton3.Checked)
                 nJugador = 3;
-            
             else
                 nJugador = 4;
 
-            switch (nJugador)
+            if (nJugador == 1 && Turnos1 < 0)
+                online = false;
+            else if (nJugador == 2 && Turnos2 < 0)
+                online = false;
+            else if (nJugador == 3 && Turnos3 < 0)
+                online = false;
+            else if (nJugador == 4 && Turnos4 < 0)
+                online = false;
+
+            if (online)
             {
-                case 1:
-                    if (posiciones[0] == 0)
+                if (posiciones[nJugador - 1] < 31 && (posiciones[nJugador - 1] + suma) >= 31)
+                {
+                    pozo1 = false;
+                    pozo2 = false;
+                    pozo3 = false;
+                    pozo4 = false;
+                }
+
+                if (posiciones[nJugador - 1] == 0)
+                {
+                    posiciones[nJugador - 1] += 1;
+                }
+
+                posiciones[nJugador - 1] += suma;
+
+                if (posiciones[nJugador - 1] > 63)  //Retrocedir quan s'arriba a la última casella
+                {
+                    posiciones[nJugador - 1] = 2 * 63 - posiciones[nJugador - 1];
+                }
+
+                while (posiciones[nJugador - 1] == 26 || posiciones[nJugador - 1] == 53)
+                {
+                    if (posiciones[nJugador - 1] == 26)         //Posició especial: Dados
                     {
-                        posiciones[0] += 1;
+                        posiciones[nJugador - 1] = posiciones[nJugador - 1] + 26 + suma;
                     }
 
-                    posiciones[0] += suma;
-
-                    if (posiciones[0] > 63)
+                    else if (posiciones[nJugador - 1] == 53)    //Posició especial: Dados
                     {
-                        posiciones[0] = 2 * 63 - posiciones[0];
+                        posiciones[nJugador - 1] = posiciones[nJugador - 1] + 53 + suma;
                     }
 
-                    break;
-
-                case 2:
-                    if (posiciones[1] == 0)
+                    if (posiciones[nJugador - 1] > 63)  //Retrocedir quan s'arriba a la última casella
                     {
-                        posiciones[1] += 1;
+                        posiciones[nJugador - 1] = 2 * 63 - posiciones[nJugador - 1];
+                    }
+                }
+
+                switch (posiciones[nJugador - 1])       //Posicions especials (Regles del joc -> http://museodeljuego.org/wp-content/uploads/contenidos_0000000699_docu1.pdf)
+                {
+                    case 5:     //De oca a oca
+                        posiciones[nJugador - 1] = 9;
+                        volverATirar = true;
+                        break;
+                    case 9:     //De oca a oca
+                        posiciones[nJugador - 1] = 14;
+                        volverATirar = true;
+                        break;
+                    case 14:     //De oca a oca
+                        posiciones[nJugador - 1] = 18;
+                        volverATirar = true;
+                        break;
+                    case 18:     //De oca a oca
+                        posiciones[nJugador - 1] = 23;
+                        volverATirar = true;
+                        break;
+                    case 23:     //De oca a oca
+                        posiciones[nJugador - 1] = 27;
+                        volverATirar = true;
+                        break;
+                    case 27:     //De oca a oca
+                        posiciones[nJugador - 1] = 32;
+                        volverATirar = true;
+                        break;
+                    case 32:     //De oca a oca
+                        posiciones[nJugador - 1] = 36;
+                        volverATirar = true;
+                        break;
+                    case 36:     //De oca a oca
+                        posiciones[nJugador - 1] = 41;
+                        volverATirar = true;
+                        break;
+                    case 41:     //De oca a oca
+                        posiciones[nJugador - 1] = 45;
+                        volverATirar = true;
+                        break;
+                    case 45:     //De oca a oca
+                        posiciones[nJugador - 1] = 50;
+                        volverATirar = true;
+                        break;
+                    case 50:     //De oca a oca
+                        posiciones[nJugador - 1] = 54;
+                        volverATirar = true;
+                        break;
+                    case 54:     //De oca a oca
+                        posiciones[nJugador - 1] = 59;
+                        volverATirar = true;
+                        break;
+                    case 59:     //De oca a oca
+                        posiciones[nJugador - 1] = 63;
+                        volverATirar = true;
+                        break;
+                    case 6:     //Puente a puente
+                        posiciones[nJugador - 1] = 19;
+                        pierdeTurno = 1;
+                        break;
+                    case 12:    //Puente a puente
+                        posiciones[nJugador - 1] = 19;
+                        pierdeTurno = 1;
+                        break;
+                    case 19:    //Posada
+                        pierdeTurno = 1;
+                        break;
+                    case 31:    //Pozo
+                        pozo = true;
+                        break;
+                    case 42:    //Laberinto
+                        posiciones[nJugador - 1] = 30;
+                        break;
+                    case 52:    //Carcel
+                        pierdeTurno = 2;
+                        break;
+                    case 58:    //Muerte
+                        posiciones[nJugador - 1] = 0;
+                        break;
+                }
+
+                if (posiciones[nJugador - 1] > 63)  //Retrocedir quan s'arriba a la última casella
+                {
+                    posiciones[nJugador - 1] = 2 * 63 - posiciones[nJugador - 1];
+                }
+
+                if (pierdeTurno > 0)
+                {
+                    if (nJugador == 1)
+                    {
+                        Turnos1 = pierdeTurno;
                     }
 
-                    posiciones[1] += suma;
-
-                    if (posiciones[1] > 63)
+                    else if (nJugador == 2)
                     {
-                        posiciones[1] = 2 * 63 - posiciones[1];
+                        Turnos2 = pierdeTurno;
                     }
 
-                    break;
-
-                case 3:
-                    if (posiciones[2] == 0)
+                    else if (nJugador == 3)
                     {
-                        posiciones[2] += 1;
+                        Turnos3 = pierdeTurno;
                     }
 
-                    posiciones[2] += suma;
-
-                    if (posiciones[2] > 63)
+                    else
                     {
-                        posiciones[2] = 2 * 63 - posiciones[2];
+                        Turnos4 = pierdeTurno;
+                    }
+                }
+
+                if (pozo)
+                {
+                    if (nJugador == 1)
+                    {
+                        pozo1 = true;
                     }
 
-                    break;
-
-                case 4:
-                    if (posiciones[3] == 0)
+                    else if (nJugador == 2)
                     {
-                        posiciones[3] += 1;
+                        pozo2 = true;
                     }
 
-                    posiciones[3] += suma;
-
-                    if (posiciones[3] > 63)
+                    else if (nJugador == 3)
                     {
-                        posiciones[3] = 2 * 63 - posiciones[3];
+                        pozo3 = true;
                     }
 
-                    break;
+                    else
+                    {
+                        pozo4 = true;
+                    }
+                }
+
+                tablero.Invalidate();
             }
 
-            tablero.Invalidate();
-        }
-
-        private void AsignarPosiciones()
-        {
-           // Point[] posiciones = new Point[63];// Crear un vector de Point para almacenar las posiciones
-           // int index = 0;
-
-            for (int rowIndex = 0; rowIndex < 7; rowIndex++)
+            if (volverATirar)
             {
-                for (int colIndex = 0; colIndex < 9; colIndex++)
+                if (nJugador == 1)
                 {
-                   
-                    string posicion = $"({rowIndex}, {colIndex})"; // Crear una cadena que representa la posición
-                    matriz.Rows[rowIndex].Cells[colIndex].Value = posicion; // Asigna la posición a la celda
-                 //   posiciones[index] = new Point(rowIndex, colIndex);
-                 //   index++;
+                    radioButton1.Checked = true;
+                    radioButton2.Checked = false;
+                }
 
+                else if (nJugador == 2)
+                {
+                    radioButton2.Checked = true;
+                    radioButton3.Checked = false;
+                }
+
+                else if (nJugador == 3)
+                {
+                    radioButton3.Checked = true;
+                    radioButton4.Checked = false;
+                }
+
+                else
+                {
+                    radioButton4.Checked = true;
+                    radioButton1.Checked = false;
+                }
+            }
+            else
+            {
+                if (posiciones[nJugador - 1] == 63 && online)
+                    MessageBox.Show("Ha ganado el jugador " + Convert.ToString(nJugador));
+
+                while (saltar)
+                {
+                    switch (nJugador)
+                    {
+                        case 1:
+                            if (pozo2)
+                            {
+                                nJugador = 2;
+                            }
+                            else if (Turnos2 != 0)
+                            {
+                                nJugador = 2;
+                                Turnos2--;
+                            }
+                            else
+                            {
+                                saltar = false;
+                                radioButton2.Checked = true;
+                            }
+                            break;
+                        case 2:
+                            if (pozo3)
+                            {
+                                nJugador = 3;
+                            }
+                            else if (Turnos3 != 0)
+                            {
+                                nJugador = 3;
+                                Turnos3--;
+                            }
+                            else
+                            {
+                                saltar = false;
+                                radioButton3.Checked = true;
+                            }
+                            break;
+                        case 3:
+                            if (pozo4)
+                            {
+                                nJugador = 4;
+                            }
+                            else if (Turnos4 != 0)
+                            {
+                                nJugador = 4;
+                                Turnos4--;
+                            }
+                            else
+                            {
+                                saltar = false;
+                                radioButton4.Checked = true;
+                            }
+                            break;
+                        case 4:
+                            if (pozo1)
+                            {
+                                nJugador = 1;
+                            }
+                            else if (Turnos1 != 0)
+                            {
+                                nJugador = 1;
+                                Turnos1--;
+                            }
+                            else
+                            {
+                                saltar = false;
+                                radioButton1.Checked = true;
+                            }
+                            break;
+                    }
                 }
             }
 
-         //Opcional: Asignar el DataTable a un DataGridView para visualizar las posiciones
-         //myDataGridView.DataSource = posiciones;
-        }
-
-        private void ResaltarCelda(int suma)
-        {
-            // Limpiar las celdas resaltadas previamente
-            foreach(DataGridViewRow row in matriz.Rows)
+            if (radioButton1.Checked && Player == 1)
             {
-                foreach (DataGridViewCell cell in row.Cells)
-                {
-                    cell.Style.BackColor = Color.White; 
-                }
+                button_Dados.Enabled = true;
             }
-
-            /// Resaltar celdas en un bucle hasta llegar a la suma acumulada
-            for (int i = 1; i <= sumaTotal && i <= 63; i++) //if (suma >= 1 && suma <= 63) 
+            else if (radioButton2.Checked && Player == 2)
             {
-                int maxCasillas = 63;
-                int Casilla = Math.Min(suma, maxCasillas) - 1; // Ajustar para indexar desde 0
-
-                int rowIndex = Casilla / 9; // Determina el índice de fila ejemplo: 10/9=1
-                int colIndex = Casilla % 9;  // Determina el índice de columna ejemplo 10%9=1 --> (1,1) posisicon 10
-
-                // Resaltar la celda correspondiente
-                if (rowIndex >= 0 && rowIndex < matriz.RowCount && colIndex >= 0 && colIndex < matriz.ColumnCount)
-                {
-                    matriz.Rows[rowIndex].Cells[colIndex].Style.BackColor = Color.Yellow; // Resalta en color amarillo
-                    posicionesResaltadas.Add(new Point(rowIndex, colIndex)); // Guarda la posición resaltada
-                }
+                button_Dados.Enabled = true;
+            }
+            else if (radioButton3.Checked && Player == 3)
+            {
+                button_Dados.Enabled = true;
+            }
+            else if (radioButton4.Checked && Player == 4)
+            {
+                button_Dados.Enabled = true;
             }
         }
 
         private void tablero_Paint(object sender, PaintEventArgs e)
         {
+            float res = resolution;
             int[] coord1 = new int[2];
             int[] coord2 = new int[2];
             int[] coord3 = new int[2];
             int[] coord4 = new int[2];
 
-            coord1 = GetCoordinates(posiciones[0], casillas, casillasJugador, 1);
-            coord2 = GetCoordinates(posiciones[1], casillas, casillasJugador, 2);
-            coord3 = GetCoordinates(posiciones[2], casillas, casillasJugador, 3);
-            coord4 = GetCoordinates(posiciones[3], casillas, casillasJugador, 4);
+            coord1 = GetCoordinates(casillas, casillasJugador, 1);
+            coord2 = GetCoordinates(casillas, casillasJugador, 2);
+            coord3 = GetCoordinates(casillas, casillasJugador, 3);
+            coord4 = GetCoordinates(casillas, casillasJugador, 4);
 
             Graphics g = e.Graphics;
 
-            RectangleF pieza1 = new RectangleF(coord1[0], coord1[1], (int)(35 * 0.7), (int)(35 * 0.7));
-            RectangleF pieza2 = new RectangleF(coord2[0], coord2[1], (int)(35 * 0.7), (int)(35 * 0.7));
-            RectangleF pieza3 = new RectangleF(coord3[0], coord3[1], (int)(35 * 0.7), (int)(35 * 0.7));
-            RectangleF pieza4 = new RectangleF(coord4[0], coord4[1], (int)(35 * 0.7), (int)(35 * 0.7));
+            RectangleF pieza1 = new RectangleF(coord1[0], coord1[1], (int)(35 * res), (int)(35 * res));
+            RectangleF pieza2 = new RectangleF(coord2[0], coord2[1], (int)(35 * res), (int)(35 * res));
+            RectangleF pieza3 = new RectangleF(coord3[0], coord3[1], (int)(35 * res), (int)(35 * res));
+            RectangleF pieza4 = new RectangleF(coord4[0], coord4[1], (int)(35 * res), (int)(35 * res));
 
             SolidBrush myBrush1 = new SolidBrush(Color.Red); //Interior de color
             SolidBrush myBrush2 = new SolidBrush(Color.Blue);
@@ -288,10 +588,12 @@ namespace WindowsFormsApplication1
             myPen.Dispose();
         }
 
-        private int[] GetCoordinates(int pos, List<int> cas, List<int> casJugador, int nJugador)    //Retorna les coordenades dels pixels del tauler
+        private int[] GetCoordinates(List<int> cas, List<int> casJugador, int nJugador)    //Retorna les coordenades dels pixels del tauler
         {
+            int pos = posiciones[nJugador - 1];
+            float res = resolution;
             int[] coords = new int[2];  //x i y de les fitxes
-            int separacion = (int)(35 * 0.7 * (nJugador - 1)); 
+            int separacion = (int)(35 * res * (nJugador - 1));
 
             if (pos == 0)
             {
@@ -305,13 +607,13 @@ namespace WindowsFormsApplication1
             }
             else if (pos == 8)
             {
-                coords[0] = cas[pos] - 10 * (nJugador - 1);
+                coords[0] = (int)(cas[pos] - 10 * res * (nJugador - 1));
                 coords[1] = casJugador[1] - separacion;
             }
             else if (pos == 9)
             {
                 coords[0] = casJugador[2] - separacion;
-                coords[1] = cas[pos] - 10 * (nJugador - 1);
+                coords[1] = (int)(cas[pos] - 10 * res * (nJugador - 1));
             }
             else if (pos >= 10 && pos <= 17)
             {
@@ -321,11 +623,11 @@ namespace WindowsFormsApplication1
             else if (pos == 18)
             {
                 coords[0] = casJugador[2] - separacion;
-                coords[1] = cas[pos] + 10 * (nJugador - 1);
+                coords[1] = (int)(cas[pos] + 10 * res * (nJugador - 1));
             }
             else if (pos == 19)
             {
-                coords[0] = cas[pos] - 10 * (nJugador - 1);
+                coords[0] = (int)(cas[pos] - 10 * res * (nJugador - 1));
                 coords[1] = casJugador[3] + separacion;
             }
             else if (pos >= 20 && pos <= 27)
@@ -335,13 +637,13 @@ namespace WindowsFormsApplication1
             }
             else if (pos == 28)
             {
-                coords[0] = cas[pos] + 10 * (nJugador - 1);
+                coords[0] = (int)(cas[pos] + 10 * res * (nJugador - 1));
                 coords[1] = casJugador[3] + separacion;
             }
             else if (pos == 29)
             {
                 coords[0] = casJugador[4] + separacion;
-                coords[1] = cas[pos] + 10 * (nJugador - 1);
+                coords[1] = (int)(cas[pos] + 10 * res * (nJugador - 1));
             }
             else if (pos >= 30 && pos <= 35)
             {
@@ -351,11 +653,11 @@ namespace WindowsFormsApplication1
             else if (pos == 36)
             {
                 coords[0] = casJugador[4] + separacion;
-                coords[1] = cas[pos] - 10 * (nJugador - 1);
+                coords[1] = (int)(cas[pos] - 10 * res * (nJugador - 1));
             }
             else if (pos == 37)
             {
-                coords[0] = cas[pos] + 10 * (nJugador - 1);
+                coords[0] = (int)(cas[pos] + 10 * res * (nJugador - 1));
                 coords[1] = casJugador[5] - separacion;
             }
             else if (pos >= 38 && pos <= 43)
@@ -365,13 +667,13 @@ namespace WindowsFormsApplication1
             }
             else if (pos == 44)
             {
-                coords[0] = cas[pos] - 10 * (nJugador - 1);
+                coords[0] = (int)(cas[pos] - 10 * res * (nJugador - 1));
                 coords[1] = casJugador[5] - separacion;
             }
             else if (pos == 45)
             {
                 coords[0] = casJugador[6] - separacion;
-                coords[1] = cas[pos] - 10 * (nJugador - 1);
+                coords[1] = (int)(cas[pos] - 10 * res * (nJugador - 1));
             }
             else if (pos >= 46 && pos <= 49)
             {
@@ -381,11 +683,11 @@ namespace WindowsFormsApplication1
             else if (pos == 50)
             {
                 coords[0] = casJugador[6] - separacion;
-                coords[1] = cas[pos] + 10 * (nJugador - 1);
+                coords[1] = (int)(cas[pos] + 10 * res * (nJugador - 1));
             }
             else if (pos == 51)
             {
-                coords[0] = cas[pos] - 10 * (nJugador - 1);
+                coords[0] = (int)(cas[pos] - 10 * res * (nJugador - 1));
                 coords[1] = casJugador[7] + separacion;
             }
             else if (pos >= 52 && pos <= 55)
@@ -395,13 +697,13 @@ namespace WindowsFormsApplication1
             }
             else if (pos == 56)
             {
-                coords[0] = cas[pos] + 10 * (nJugador - 1);
+                coords[0] = (int)(cas[pos] + 10 * res * (nJugador - 1));
                 coords[1] = casJugador[7] + separacion;
             }
             else if (pos == 57)
             {
                 coords[0] = casJugador[8] + separacion;
-                coords[1] = cas[pos] + 10 * (nJugador - 1);
+                coords[1] = (int)(cas[pos] + 10 * res * (nJugador - 1));
             }
             else if (pos >= 58 && pos <= 59)
             {
@@ -411,11 +713,11 @@ namespace WindowsFormsApplication1
             else if (pos == 60)
             {
                 coords[0] = casJugador[8] + separacion;
-                coords[1] = cas[pos] - 10 * (nJugador - 1);
+                coords[1] = (int)(cas[pos] - 10 * res * (nJugador - 1));
             }
             else if (pos == 61)
             {
-                coords[0] = cas[pos] + 10 * (nJugador - 1);
+                coords[0] = (int)(cas[pos] + 10 * res * (nJugador - 1));
                 coords[1] = casJugador[9] - separacion;
             }
             else if (pos >= 62)
@@ -425,6 +727,69 @@ namespace WindowsFormsApplication1
             }
 
             return coords;
+        }
+
+        private void Resolution_Box_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            switch (Resolution_Box.SelectedIndex)
+            {
+                case 0:     //1000x1000
+                    resolution = 1.0f;
+                    break;
+                    
+                case 1:     //900x900
+                    resolution = 0.9f;
+                    break;
+
+                case 2:     //800x800
+                    resolution = 0.8f;
+                    break;
+
+                case 3:     //700x700
+                    resolution = 0.7f;
+                    break;
+
+                case 4:     //600x600
+                    resolution = 0.6f;
+                    break;
+
+                case 5:     //500x500
+                    resolution = 0.5f;
+                    break;
+
+                case 6:     //400x400
+                    resolution = 0.4f;
+                    break;
+
+                case 7:     //300x300
+                    resolution = 0.3f;
+                    break;
+            }
+
+            CrearTablero();
+        }
+
+        private void Form2_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            switch (Player)
+            {
+                case 1:
+                    J1 = "NO";
+                    break;
+                case 2:
+                    J2 = "NO";
+                    break;
+                case 3:
+                    J3 = "NO";
+                    break;
+                case 4:
+                    J4 = "NO";
+                    break;
+            }
+
+            string mensaje = $"21/{nPartida}/{J1}/{J2}/{J3}/{J4}";
+            byte[] msg = Encoding.ASCII.GetBytes(mensaje);
+            server.Send(msg);
         }
     }
 }

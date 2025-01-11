@@ -28,9 +28,9 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.matriz = new System.Windows.Forms.DataGridView();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form2));
+            this.Resolution_Box = new System.Windows.Forms.ComboBox();
             this.button_Dados = new System.Windows.Forms.Button();
-            this.textBox1 = new System.Windows.Forms.TextBox();
             this.Resultado = new System.Windows.Forms.TextBox();
             this.Resultado2 = new System.Windows.Forms.TextBox();
             this.SumaResultado = new System.Windows.Forms.TextBox();
@@ -39,93 +39,97 @@
             this.radioButton2 = new System.Windows.Forms.RadioButton();
             this.radioButton3 = new System.Windows.Forms.RadioButton();
             this.radioButton4 = new System.Windows.Forms.RadioButton();
-            ((System.ComponentModel.ISupportInitialize)(this.matriz)).BeginInit();
+            this.Resolution_Lbl = new System.Windows.Forms.Label();
+            this.Resultado_Lbl = new System.Windows.Forms.Label();
+            this.label1 = new System.Windows.Forms.Label();
+            this.nJugadorLbl = new System.Windows.Forms.Label();
             this.SuspendLayout();
             // 
-            // matriz
+            // Resolution_Box
             // 
-            this.matriz.AllowUserToAddRows = false;
-            this.matriz.AllowUserToDeleteRows = false;
-            this.matriz.AllowUserToResizeColumns = false;
-            this.matriz.AllowUserToResizeRows = false;
-            this.matriz.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.matriz.ColumnHeadersVisible = false;
-            this.matriz.Cursor = System.Windows.Forms.Cursors.Hand;
-            this.matriz.Location = new System.Drawing.Point(20, 200);
-            this.matriz.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.matriz.MultiSelect = false;
-            this.matriz.Name = "matriz";
-            this.matriz.ReadOnly = true;
-            this.matriz.RowHeadersVisible = false;
-            this.matriz.RowHeadersWidth = 62;
-            this.matriz.RowTemplate.Height = 28;
-            this.matriz.ScrollBars = System.Windows.Forms.ScrollBars.None;
-            this.matriz.Size = new System.Drawing.Size(331, 164);
-            this.matriz.TabIndex = 0;
+            this.Resolution_Box.AccessibleName = "Resolution_Box";
+            this.Resolution_Box.Cursor = System.Windows.Forms.Cursors.Hand;
+            this.Resolution_Box.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.Resolution_Box.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Resolution_Box.FormattingEnabled = true;
+            this.Resolution_Box.Items.AddRange(new object[] {
+            "1000x1000",
+            "900x900",
+            "800x800",
+            "700x700",
+            "600x600",
+            "500x500",
+            "400x400",
+            "300x300"});
+            this.Resolution_Box.Location = new System.Drawing.Point(65, 537);
+            this.Resolution_Box.Margin = new System.Windows.Forms.Padding(4);
+            this.Resolution_Box.Name = "Resolution_Box";
+            this.Resolution_Box.Size = new System.Drawing.Size(188, 28);
+            this.Resolution_Box.TabIndex = 28;
+            this.Resolution_Box.Tag = "";
+            this.Resolution_Box.SelectedIndexChanged += new System.EventHandler(this.Resolution_Box_SelectedIndexChanged);
             // 
             // button_Dados
             // 
-            this.button_Dados.Location = new System.Drawing.Point(52, 99);
+            this.button_Dados.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.button_Dados.Location = new System.Drawing.Point(17, 74);
+            this.button_Dados.Margin = new System.Windows.Forms.Padding(4);
             this.button_Dados.Name = "button_Dados";
-            this.button_Dados.Size = new System.Drawing.Size(115, 34);
+            this.button_Dados.Size = new System.Drawing.Size(261, 47);
             this.button_Dados.TabIndex = 18;
             this.button_Dados.Text = "Tirar los dados";
             this.button_Dados.UseVisualStyleBackColor = true;
             this.button_Dados.Click += new System.EventHandler(this.button_Dados_Click);
             // 
-            // textBox1
-            // 
-            this.textBox1.Location = new System.Drawing.Point(0, 0);
-            this.textBox1.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(68, 20);
-            this.textBox1.TabIndex = 19;
-            // 
             // Resultado
             // 
             this.Resultado.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.Resultado.Location = new System.Drawing.Point(69, 153);
-            this.Resultado.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Resultado.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Resultado.Location = new System.Drawing.Point(87, 143);
             this.Resultado.Name = "Resultado";
             this.Resultado.ReadOnly = true;
-            this.Resultado.Size = new System.Drawing.Size(23, 20);
+            this.Resultado.Size = new System.Drawing.Size(38, 26);
             this.Resultado.TabIndex = 20;
             // 
             // Resultado2
             // 
             this.Resultado2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.Resultado2.Location = new System.Drawing.Point(114, 153);
-            this.Resultado2.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Resultado2.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Resultado2.Location = new System.Drawing.Point(153, 143);
             this.Resultado2.Name = "Resultado2";
             this.Resultado2.ReadOnly = true;
-            this.Resultado2.Size = new System.Drawing.Size(23, 20);
+            this.Resultado2.Size = new System.Drawing.Size(38, 26);
             this.Resultado2.TabIndex = 21;
             // 
             // SumaResultado
             // 
             this.SumaResultado.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.SumaResultado.Location = new System.Drawing.Point(83, 180);
-            this.SumaResultado.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.SumaResultado.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.SumaResultado.Location = new System.Drawing.Point(153, 198);
             this.SumaResultado.Name = "SumaResultado";
             this.SumaResultado.ReadOnly = true;
-            this.SumaResultado.Size = new System.Drawing.Size(40, 13);
+            this.SumaResultado.Size = new System.Drawing.Size(67, 19);
             this.SumaResultado.TabIndex = 22;
             // 
             // panel1
             // 
             this.panel1.BackColor = System.Drawing.Color.Transparent;
-            this.panel1.Location = new System.Drawing.Point(464, 11);
+            this.panel1.Location = new System.Drawing.Point(307, 13);
+            this.panel1.Margin = new System.Windows.Forms.Padding(4);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(900, 900);
+            this.panel1.Size = new System.Drawing.Size(1000, 1000);
             this.panel1.TabIndex = 23;
             // 
             // radioButton1
             // 
             this.radioButton1.AutoSize = true;
             this.radioButton1.Checked = true;
-            this.radioButton1.Location = new System.Drawing.Point(52, 496);
+            this.radioButton1.Enabled = false;
+            this.radioButton1.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.radioButton1.Location = new System.Drawing.Point(77, 304);
+            this.radioButton1.Margin = new System.Windows.Forms.Padding(4);
             this.radioButton1.Name = "radioButton1";
-            this.radioButton1.Size = new System.Drawing.Size(72, 17);
+            this.radioButton1.Size = new System.Drawing.Size(120, 24);
             this.radioButton1.TabIndex = 24;
             this.radioButton1.TabStop = true;
             this.radioButton1.Text = "Jugador 1";
@@ -134,9 +138,12 @@
             // radioButton2
             // 
             this.radioButton2.AutoSize = true;
-            this.radioButton2.Location = new System.Drawing.Point(52, 519);
+            this.radioButton2.Enabled = false;
+            this.radioButton2.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.radioButton2.Location = new System.Drawing.Point(77, 335);
+            this.radioButton2.Margin = new System.Windows.Forms.Padding(4);
             this.radioButton2.Name = "radioButton2";
-            this.radioButton2.Size = new System.Drawing.Size(72, 17);
+            this.radioButton2.Size = new System.Drawing.Size(120, 24);
             this.radioButton2.TabIndex = 25;
             this.radioButton2.Text = "Jugador 2";
             this.radioButton2.UseVisualStyleBackColor = true;
@@ -144,9 +151,12 @@
             // radioButton3
             // 
             this.radioButton3.AutoSize = true;
-            this.radioButton3.Location = new System.Drawing.Point(52, 542);
+            this.radioButton3.Enabled = false;
+            this.radioButton3.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.radioButton3.Location = new System.Drawing.Point(77, 368);
+            this.radioButton3.Margin = new System.Windows.Forms.Padding(4);
             this.radioButton3.Name = "radioButton3";
-            this.radioButton3.Size = new System.Drawing.Size(72, 17);
+            this.radioButton3.Size = new System.Drawing.Size(120, 24);
             this.radioButton3.TabIndex = 26;
             this.radioButton3.Text = "Jugador 3";
             this.radioButton3.UseVisualStyleBackColor = true;
@@ -154,45 +164,93 @@
             // radioButton4
             // 
             this.radioButton4.AutoSize = true;
-            this.radioButton4.Location = new System.Drawing.Point(52, 565);
+            this.radioButton4.Enabled = false;
+            this.radioButton4.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.radioButton4.Location = new System.Drawing.Point(77, 399);
+            this.radioButton4.Margin = new System.Windows.Forms.Padding(4);
             this.radioButton4.Name = "radioButton4";
-            this.radioButton4.Size = new System.Drawing.Size(72, 17);
+            this.radioButton4.Size = new System.Drawing.Size(120, 24);
             this.radioButton4.TabIndex = 27;
             this.radioButton4.Text = "Jugador 4";
             this.radioButton4.UseVisualStyleBackColor = true;
             // 
+            // Resolution_Lbl
+            // 
+            this.Resolution_Lbl.AutoSize = true;
+            this.Resolution_Lbl.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Resolution_Lbl.Location = new System.Drawing.Point(27, 521);
+            this.Resolution_Lbl.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.Resolution_Lbl.Name = "Resolution_Lbl";
+            this.Resolution_Lbl.Size = new System.Drawing.Size(189, 20);
+            this.Resolution_Lbl.TabIndex = 29;
+            this.Resolution_Lbl.Text = "Resolución tablero";
+            // 
+            // Resultado_Lbl
+            // 
+            this.Resultado_Lbl.AutoSize = true;
+            this.Resultado_Lbl.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Resultado_Lbl.Location = new System.Drawing.Point(27, 198);
+            this.Resultado_Lbl.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.Resultado_Lbl.Name = "Resultado_Lbl";
+            this.Resultado_Lbl.Size = new System.Drawing.Size(109, 20);
+            this.Resultado_Lbl.TabIndex = 30;
+            this.Resultado_Lbl.Text = "Resultado:";
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(28, 29);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(135, 16);
+            this.label1.TabIndex = 31;
+            this.label1.Text = "Eres el jugador:";
+            // 
+            // nJugadorLbl
+            // 
+            this.nJugadorLbl.AutoSize = true;
+            this.nJugadorLbl.Location = new System.Drawing.Point(165, 29);
+            this.nJugadorLbl.Name = "nJugadorLbl";
+            this.nJugadorLbl.Size = new System.Drawing.Size(31, 16);
+            this.nJugadorLbl.TabIndex = 32;
+            this.nJugadorLbl.Text = "NaN";
+            // 
             // Form2
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.AutoSize = true;
-            this.ClientSize = new System.Drawing.Size(1155, 765);
+            this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
+            this.BackColor = System.Drawing.Color.Lavender;
+            this.ClientSize = new System.Drawing.Size(1351, 1053);
+            this.Controls.Add(this.nJugadorLbl);
+            this.Controls.Add(this.label1);
+            this.Controls.Add(this.Resultado_Lbl);
+            this.Controls.Add(this.Resolution_Lbl);
+            this.Controls.Add(this.Resolution_Box);
             this.Controls.Add(this.radioButton4);
             this.Controls.Add(this.radioButton3);
             this.Controls.Add(this.radioButton2);
             this.Controls.Add(this.radioButton1);
-            this.Controls.Add(this.matriz);
             this.Controls.Add(this.SumaResultado);
             this.Controls.Add(this.Resultado2);
             this.Controls.Add(this.Resultado);
-            this.Controls.Add(this.textBox1);
             this.Controls.Add(this.button_Dados);
             this.Controls.Add(this.panel1);
-            this.Margin = new System.Windows.Forms.Padding(2, 2, 2, 2);
+            this.Font = new System.Drawing.Font("Courier New", 8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form2";
-            this.Text = "Form2";
+            this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
+            this.Text = "Juego de la oca";
+            this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form2_FormClosed);
             this.Load += new System.EventHandler(this.Form2_Load);
-            ((System.ComponentModel.ISupportInitialize)(this.matriz)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
         }
 
         #endregion
-
-        private System.Windows.Forms.DataGridView matriz;
         private System.Windows.Forms.Button button_Dados;
-        private System.Windows.Forms.TextBox textBox1;
         private System.Windows.Forms.TextBox Resultado;
         private System.Windows.Forms.TextBox Resultado2;
         private System.Windows.Forms.TextBox SumaResultado;
@@ -201,5 +259,10 @@
         private System.Windows.Forms.RadioButton radioButton2;
         private System.Windows.Forms.RadioButton radioButton3;
         private System.Windows.Forms.RadioButton radioButton4;
+        private System.Windows.Forms.ComboBox Resolution_Box;
+        private System.Windows.Forms.Label Resolution_Lbl;
+        private System.Windows.Forms.Label Resultado_Lbl;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Label nJugadorLbl;
     }
 }

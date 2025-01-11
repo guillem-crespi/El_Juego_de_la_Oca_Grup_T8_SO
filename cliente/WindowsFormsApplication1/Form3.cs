@@ -8,6 +8,7 @@ using System.Text;
 using System.Windows.Forms;
 using System.Net;
 using System.Net.Sockets;
+using System.Drawing.Text;
 
 namespace WindowsFormsApplication1
 {
@@ -15,11 +16,11 @@ namespace WindowsFormsApplication1
     {
         Socket server;
         string mensaje;
-
+       
         public Form3()
         {
             InitializeComponent();
-        }
+    }
 
         private void button_LogIn_Click(object sender, EventArgs e)
         {
@@ -33,7 +34,7 @@ namespace WindowsFormsApplication1
             try
             {
                 server.Connect(ipep);//Intentamos conectar el socket
-                BackColor = Color.Green;
+                BackColor = Color.PaleGreen;
             }
             catch (SocketException)
             {
@@ -52,7 +53,7 @@ namespace WindowsFormsApplication1
             server.Receive(msg2);
             mensaje = Encoding.ASCII.GetString(msg2).Split('\0')[0];
 
-            if (mensaje == "LOGIN_SUCCESSFUL")
+            if (mensaje == "1/LOGIN_SUCCESSFUL")
             {
                 MessageBox.Show("Bienvenido/a " + nickname.Text + ". Has iniciado sesión correctamente.");
                 Form f = new Form1(nickname.Text, password.Text, server);
@@ -63,14 +64,18 @@ namespace WindowsFormsApplication1
             }
             else
             {
-                if (mensaje == "NO_USER")
+                if (mensaje == "1/NO_USER")
                 {
                     MessageBox.Show("No estás registrado. Para registrarte, rellena los campos y presiona 'Registrar'.");
 
                 }
-                else if (mensaje == "WRONG_PASSWORD")
+                else if (mensaje == "1/WRONG_PASSWORD")
                 {
                     MessageBox.Show("Contraseña incorrecta. Por favor, inténtalo de nuevo.");
+                }
+                else if (mensaje == "1/ALREADY_IN")
+                {
+                    MessageBox.Show("Jugador ya conectado. Prueba con otro usuario");
                 }
                 else
                 {
@@ -128,11 +133,11 @@ namespace WindowsFormsApplication1
                     server.Receive(msg2);
                     mensaje = Encoding.ASCII.GetString(msg2).Split('\0')[0];
 
-                    if (mensaje == "0")
+                    if (mensaje == "2/0")
                     {
                         MessageBox.Show("Bienvenido/a " + nickname.Text + ". Te has registrado correctamente.");
                     }
-                    else if (mensaje == "-1")
+                    else if (mensaje == "2/-1")
                     {
                         MessageBox.Show("Fallo al registrar, intentelo de nuevo.");
                     }
@@ -161,5 +166,7 @@ namespace WindowsFormsApplication1
             server.Shutdown(SocketShutdown.Both);
             server.Close();
         }
+
+       
     }
 }
