@@ -25,7 +25,6 @@ namespace WindowsFormsApplication1
             dt = new DataTable();
             dt.Columns.Add("Conectados");
             ListaConectados.DataSource = dt;
-
         }
 
         private void button_Conectar_Click(object sender, EventArgs e) // BOTON CONECTAR
@@ -112,7 +111,7 @@ namespace WindowsFormsApplication1
                     mensaje = "2/" + nickname.Text + "/" + password.Text;
 
                     // Enviamos al servidor el nombre tecleado
-                    byte[] msg = System.Text.Encoding.ASCII.GetBytes(mensaje);
+                    byte[] msg = Encoding.ASCII.GetBytes(mensaje);
                     server.Send(msg);
 
                     //Recibimos la respuesta del servidor                    
@@ -157,18 +156,28 @@ namespace WindowsFormsApplication1
 
             string mensaje2 = Encoding.ASCII.GetString(msg2).Split('\0')[0];
             string[] trozos = mensaje2.Split('/');
-
-            int x = 1;
-            Invoke(new Action(() =>
+           // int num = Convert.ToInt32(trozos[0]);
+            if (trozos.Length > 0 && int.TryParse(trozos[0], out int num))
             {
-                dt.Rows.Clear();
-                int num = Convert.ToInt32(trozos[0]);
-                for (int i = 0; i <= num; i++)
+                if (num > 0)
                 {
-                    dt.Rows.Add(trozos[x]);
-                    x++;
+
+                    if (dt.Columns.Count == 0)
+                    {
+                        dt.Columns.Add("Connected Users");
+                    }
+
+
+                    for (int i = 1; i <= num; i++)
+                {
+                    if (i < trozos.Length) // Ensure we do not go out of bounds
+                    {
+                        dt.Rows.Add(trozos[i]);
+                    }
                 }
-            }));
+                }
+
+            }
         }
 
         private void button2_Click(object sender, EventArgs e) // BOTON ENVIAR CONSULTA
@@ -240,6 +249,11 @@ namespace WindowsFormsApplication1
         {
             Form2 f2 = new Form2();
             f2.ShowDialog();
+        }
+
+        private void ListaConectados_CellContentClick(object sender, DataGridViewCellEventArgs e)
+        {
+
         }
     }
 }

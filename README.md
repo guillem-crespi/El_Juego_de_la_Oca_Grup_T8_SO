@@ -4,6 +4,12 @@ Este proyecto es una implementación del clásico **Juego de la Oca**, desarroll
 
 ## Versiones y Colaboradores
 
+### **Versión 3**
+- Guillem Crespí
+- Roger Macià
+- Paula Katharina
+- Martí Claramunt
+
 ### **Versión 2**
 - Paula Katharina
 - Martí Claramunt
