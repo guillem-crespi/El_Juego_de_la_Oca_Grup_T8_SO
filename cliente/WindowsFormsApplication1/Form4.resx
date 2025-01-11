@@ -117,4 +117,26 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="label2.Text" xml:space="preserve">
+    <value>Objetivo del juego.
+El objetivo es ser el primer jugador en llegar a la casilla 63, conocida como el "Jardín de la Oca". Para lograrlo, deberás avanzar según el resultado de los dados y superar los desafíos de las casillas especiales.
+
+Reglas básicas.
+Los jugadores avanzan tantas casillas como el número obtenido al lanzar los dados.
+
+Casillas especiales.
+Oca (casillas: 5, 9, 14, 18, 23, etc.): Si caes en una, avanza hasta la próxima casilla de Oca y vuelve a tirar.
+Puente (casillas: 6 y 12): Salta a la casilla 19 y pierde un turno.
+Posada (casilla: 19): Pierdes un turno.
+Pozo (casilla: 31): Quedas atrapado hasta que otro jugador pase por esta casilla.
+Laberinto (casilla: 42): Retrocede a la casilla 30.
+Cárcel (casilla: 56): Pierdes dos turnos.
+Dados (casillas: 26 y 53): Avanza tantas casillas como el número indicado en estas.
+Calavera (casilla: 58): Vuelve a la casilla 1.
+
+Condiciones para ganar.
+Para llegar al "Jardín de la Oca" (casilla 63), debes sacar el número exacto en los dados. Si sacas más puntos de los necesarios, retrocedes tantas casillas como puntos sobrantes.
+
+</value>
+  </data>
 </root>

@@ -166,7 +166,5 @@ namespace WindowsFormsApplication1
             server.Shutdown(SocketShutdown.Both);
             server.Close();
         }
-
-       
     }
 }

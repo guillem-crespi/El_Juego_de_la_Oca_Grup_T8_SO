@@ -791,5 +791,11 @@ namespace WindowsFormsApplication1
             byte[] msg = Encoding.ASCII.GetBytes(mensaje);
             server.Send(msg);
         }
+
+        private void ayudaToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Form ayuda = new Form4();
+            ayuda.Show();
+        }
     }
 }

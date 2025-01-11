@@ -284,7 +284,7 @@
             this.ListaConectados.Name = "ListaConectados";
             this.ListaConectados.RowHeadersVisible = false;
             this.ListaConectados.RowHeadersWidth = 62;
-            this.ListaConectados.Size = new System.Drawing.Size(484, 209);
+            this.ListaConectados.Size = new System.Drawing.Size(491, 209);
             this.ListaConectados.TabIndex = 32;
             // 
             // ChatSendBtn

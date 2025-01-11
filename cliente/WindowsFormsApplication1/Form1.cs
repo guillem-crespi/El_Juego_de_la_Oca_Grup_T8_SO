@@ -150,12 +150,15 @@ namespace WindowsFormsApplication1
 
             while (true)
             {
-                byte[] msg2 = new byte[80];
-                server.Receive(msg2);
-                mensaje = Encoding.ASCII.GetString(msg2).Split('\0')[0];
-                string[] trozos = mensaje.Split('/');
-                int codigo = Convert.ToInt32(trozos[0]);
-
+     
+                
+                    byte[] msg2 = new byte[80];
+                    server.Receive(msg2);
+                    mensaje = Encoding.ASCII.GetString(msg2).Split('\0')[0];
+                    string[] trozos = mensaje.Split('/');
+                    int codigo = Convert.ToInt32(trozos[0]);
+               
+               
                 switch (codigo)
                 {
                     case 3:
