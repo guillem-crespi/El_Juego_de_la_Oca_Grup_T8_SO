@@ -33,7 +33,10 @@ namespace WindowsFormsApplication1
         private string J4;
         private int nForm;
         private int nPartida;
-        
+        private bool fiPartida = false;
+        private List<string> Jugadors = new List<string>();
+        private float time = DateTime.Now.Hour * 60 + DateTime.Now.Minute + DateTime.Now.Second / 60;
+
         bool pozo1 = false;
         bool pozo2 = false;
         bool pozo3 = false;
@@ -68,7 +71,26 @@ namespace WindowsFormsApplication1
                 if (J3 == "NO")
                 {
                     Turnos3 = -1;
+
+                    Jugadors.Add(J1);
+                    Jugadors.Add(J2);
+                    Jugadors.Add("NO");
+                    Jugadors.Add("NO");
                 }
+                else
+                {
+                    Jugadors.Add(J1);
+                    Jugadors.Add(J2);
+                    Jugadors.Add(J3);
+                    Jugadors.Add("NO");
+                }
+            }
+            else
+            {
+                Jugadors.Add(J1);
+                Jugadors.Add(J2);
+                Jugadors.Add(J3);
+                Jugadors.Add(J4);
             }
 
             if (Player == 1)
@@ -92,6 +114,53 @@ namespace WindowsFormsApplication1
         public int GetFormNum()
         {
             return nForm;
+        }
+
+        void FiPartida(int n)
+        {
+            fiPartida = true;
+
+            if (n == Player)
+            {
+                string guanyador = "";
+
+                switch (n)
+                {
+                    case 1:
+                        guanyador = J1;
+                        break;
+                    case 2:
+                        guanyador = J2;
+                        break;
+                    case 3:
+                        guanyador = J3;
+                        break;
+                    case 4:
+                        guanyador = J4;
+                        break;
+                }
+
+                int Year = DateTime.Now.Year;
+                int Month = DateTime.Now.Month;
+                int Day = DateTime.Now.Day;
+                int Hour = DateTime.Now.Hour;
+                int Minute = DateTime.Now.Minute;
+                int Second = DateTime.Now.Second;
+
+                float duration = (Hour * 60 + Minute + Second / 60) - (time); //En minuts
+                string fecha = $"{Day}-{Month}-{Year}";
+                string hora = $"{Hour}:{Minute}";
+
+                string mensaje = $"22/{fecha}/{hora}/{duration}/{guanyador}/{Jugadors[0]}/{Jugadors[1]}/{Jugadors[2]}/{Jugadors[3]}";
+                byte[] msg = Encoding.ASCII.GetBytes(mensaje);
+                server.Send(msg);
+
+                mensaje = $"23/";
+                msg = Encoding.ASCII.GetBytes(mensaje);
+                server.Send(msg);
+            }
+
+            Close();
         }
 
         private void button_Dados_Click(object sender, EventArgs e)
@@ -180,6 +249,8 @@ namespace WindowsFormsApplication1
             {
                 //Jugador ha guanyat perquè els altres han abandonat
                 MessageBox.Show($"Has ganado jugador {Player} porque todos han abandonado");
+
+                FiPartida(Player);
             }
         }
 
@@ -453,7 +524,10 @@ namespace WindowsFormsApplication1
             else
             {
                 if (posiciones[nJugador - 1] == 63 && online)
+                {
                     MessageBox.Show("Ha ganado el jugador " + Convert.ToString(nJugador));
+                    FiPartida(nJugador);
+                }
 
                 while (saltar)
                 {
@@ -771,25 +845,28 @@ namespace WindowsFormsApplication1
 
         private void Form2_FormClosed(object sender, FormClosedEventArgs e)
         {
-            switch (Player)
+            if (!fiPartida)
             {
-                case 1:
-                    J1 = "NO";
-                    break;
-                case 2:
-                    J2 = "NO";
-                    break;
-                case 3:
-                    J3 = "NO";
-                    break;
-                case 4:
-                    J4 = "NO";
-                    break;
-            }
+                switch (Player)
+                {
+                    case 1:
+                        J1 = "NO";
+                        break;
+                    case 2:
+                        J2 = "NO";
+                        break;
+                    case 3:
+                        J3 = "NO";
+                        break;
+                    case 4:
+                        J4 = "NO";
+                        break;
+                }
 
-            string mensaje = $"21/{nPartida}/{J1}/{J2}/{J3}/{J4}";
-            byte[] msg = Encoding.ASCII.GetBytes(mensaje);
-            server.Send(msg);
+                string mensaje = $"21/{nPartida}/{J1}/{J2}/{J3}/{J4}";
+                byte[] msg = Encoding.ASCII.GetBytes(mensaje);
+                server.Send(msg);
+            }
         }
 
         private void ayudaToolStripMenuItem_Click(object sender, EventArgs e)

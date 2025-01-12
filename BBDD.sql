@@ -1,7 +1,7 @@
-DROP DATABASE IF EXISTS BBDD;
-CREATE DATABASE BBDD;
+DROP DATABASE IF EXISTS TG8;
+CREATE DATABASE TG8;
 
-USE BBDD;
+USE TG8;
 
 CREATE TABLE jugadores(
 
@@ -31,7 +31,6 @@ CREATE TABLE info_partida(
 	jugador3 INT,
 	jugador4 INT,
 	partida INT NOT NULL,
-	puntos INT NOT NULL,
 	FOREIGN KEY (jugador1) REFERENCES jugadores(id),
 	FOREIGN KEY (jugador2) REFERENCES jugadores(id),
 	FOREIGN KEY (jugador3) REFERENCES jugadores(id),
@@ -89,24 +88,24 @@ SELECT * FROM partidas;
 
 
 
-INSERT INTO info_partida(jugador1, jugador2, jugador3, jugador4, partida, puntos)
+INSERT INTO info_partida(jugador1, jugador2, jugador3, jugador4, partida)
 
-VALUES(1,2,3,4,1,10);
-
-
-INSERT INTO info_partida(jugador1, jugador2, jugador3, partida, puntos)
-
-VALUES(1,3,4,2,9);
+VALUES(1,2,3,4,1);
 
 
-INSERT INTO info_partida(jugador1, jugador2, partida, puntos)
+INSERT INTO info_partida(jugador1, jugador2, jugador3, partida)
 
-VALUES(2,4,3,10);
+VALUES(1,3,4,2);
 
 
-INSERT INTO info_partida(jugador1, jugador2, jugador3, jugador4, partida, puntos)
+INSERT INTO info_partida(jugador1, jugador2, partida)
 
-VALUES(1,2,3,4,4,11);
+VALUES(2,4,3);
+
+
+INSERT INTO info_partida(jugador1, jugador2, jugador3, jugador4, partida)
+
+VALUES(1,2,3,4,4);
 
 
 SELECT * FROM info_partida;

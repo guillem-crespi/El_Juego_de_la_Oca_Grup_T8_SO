@@ -149,9 +149,7 @@ namespace WindowsFormsApplication1
             DelegadoParaEscribir delegado;
 
             while (true)
-            {
-     
-                
+            {   
                     byte[] msg2 = new byte[80];
                     server.Receive(msg2);
                     mensaje = Encoding.ASCII.GetString(msg2).Split('\0')[0];

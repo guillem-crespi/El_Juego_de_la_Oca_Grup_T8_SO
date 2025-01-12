@@ -949,6 +949,205 @@ void *AtenderCliente (void *socket)
 			}
 		}
 
+		//////////////////////////////////////////////////////////
+		else if (codigo == 22) // CONSULTA 22 : ACTUALIZAR BBDD DE PARTIDA
+		{
+			int id;
+			char fecha[25];
+			char hora[20];
+			float duration;
+			char guanyador[20];
+			char J1[20];
+			char J2[20];
+			char J3[20];
+			char J4[20];
+			int P1;
+			int P2;
+			int P3;
+			int P4;
+			int nJugadors;
+			char consulta[512];
+			char consulta2[512];
+			char consulta_playerID[512];
+			int error = 0;
+
+			p = strtok(NULL, "/");
+			strcpy(fecha, p);
+
+			p = strtok(NULL, "/");
+			strcpy(hora, p);
+
+			p = strtok(NULL, "/");
+			duration = atof(p);
+
+			p = strtok(NULL, "/");
+			strcpy(guanyador, p);
+
+			p = strtok(NULL, "/");
+			strcpy(J1, p);
+
+			p = strtok(NULL, "/");
+			strcpy(J2, p);
+
+			p = strtok(NULL, "/");
+			strcpy(J3, p);
+
+			p = strtok(NULL, "/");
+			strcpy(J4, p);
+
+			if (strcmp(J4, "NO") == 0) {
+				if (strcmp(J3, "NO") == 0) {
+					nJugadors = 2;
+				}
+				else {
+					nJugadors = 3;
+				}
+			}
+			else {
+				nJugadors = 4;
+			}
+
+			sprintf(consulta_playerID, "SELECT jugadores.id FROM jugadores WHERE jugadores.nombre_usuario = '%s'", J1);
+
+			err = mysql_query(conn, consulta_playerID);
+			if (err!=0) {
+				printf("Error 1 al consultar datos de la base %u %s\n", mysql_errno(conn), mysql_error(conn));
+			}
+			
+			resultado = mysql_store_result (conn);
+			row = mysql_fetch_row (resultado);
+			
+			if (row[0]==NULL) {
+				printf("No hi ha hagut resposta\n");
+				error = 1;
+			} else {
+				P1 = atoi(row[0]);
+			}
+
+			sprintf(consulta_playerID, "SELECT jugadores.id FROM jugadores WHERE nombre_usuario = '%s'", J2);
+
+			err = mysql_query(conn, consulta_playerID);
+			if (err!=0) {
+				printf("Error 2 al consultar datos de la base %u %s\n", mysql_errno(conn), mysql_error(conn));
+			}
+			
+			resultado = mysql_store_result (conn);
+			row = mysql_fetch_row (resultado);
+			
+			if (row[0]==NULL) {
+				printf("No hi ha hagut resposta 3\n");
+				error = 1;
+			} else {
+				P2 = atoi(row[0]);
+			}
+
+			switch (nJugadors) {
+				case 4:
+					sprintf(consulta_playerID, "SELECT jugadores.id FROM jugadores WHERE nombre_usuario = '%s'", J3);
+
+					err = mysql_query(conn, consulta_playerID);
+					if (err!=0) {
+						printf("Error 4 al consultar datos de la base %u %s\n", mysql_errno(conn), mysql_error(conn));
+					}
+			
+					resultado = mysql_store_result (conn);
+					row = mysql_fetch_row (resultado);
+			
+					if (row[0]==NULL) {
+						printf("No hi ha hagut resposta 5\n");
+						error = 1;
+					} else {
+						P3 = atoi(row[0]);
+					}
+
+					sprintf(consulta_playerID, "SELECT jugadores.id FROM jugadores WHERE nombre_usuario = '%s'", J4);
+
+					err = mysql_query(conn, consulta_playerID);
+					if (err!=0) {
+						printf("Error 6 al consultar datos de la base %u %s\n", mysql_errno(conn), mysql_error(conn));
+					}
+			
+					resultado = mysql_store_result (conn);
+					row = mysql_fetch_row (resultado);
+			
+					if (row[0]==NULL) {
+						printf("No hi ha hagut resposta 7\n");
+						error = 1;
+					} else {
+						P4 = atoi(row[0]);
+					}
+
+
+
+					sprintf(consulta2, "INSERT INTO info_partida(jugador1, jugador2, jugador3, jugador4, partida) VALUES(%d, %d, %d, %d, ", P1, P2, P3, P4);
+					break;
+
+				case 3:
+					sprintf(consulta_playerID, "SELECT jugadores.id FROM jugadores WHERE nombre_usuario = '%s'", J3);
+
+					err = mysql_query(conn, consulta_playerID);
+					if (err!=0) {
+						printf("Error 8 al consultar datos de la base %u %s\n", mysql_errno(conn), mysql_error(conn));
+					}
+			
+					resultado = mysql_store_result (conn);
+					row = mysql_fetch_row (resultado);
+			
+					if (row[0]==NULL) {
+						printf("No hi ha hagut resposta 9\n");
+						error = 1;
+					} else {
+						P3 = atoi(row[0]);
+					}
+
+					sprintf(consulta2, "INSERT INTO info_partida(jugador1, jugador2, jugador3, partida) VALUES(%d, %d, %d, ", P1, P2, P3);
+					break;
+
+				case 2:
+					sprintf(consulta2, "INSERT INTO info_partida(jugador1, jugador2, partida) VALUES(%d, %d, ", P1, P2);
+					break;
+			}
+			
+			sprintf(consulta, "SELECT MAX(partidas.id) FROM (partidas)");
+
+			if (error == 0) {
+				pthread_mutex_lock( &mutex );
+				err = mysql_query(conn, consulta);
+				if (err!=0) {
+					printf("Error 10 al consultar datos de la base %u %s\n", mysql_errno(conn), mysql_error(conn));
+				}
+			
+				resultado = mysql_store_result (conn);
+				row = mysql_fetch_row (resultado);
+			
+				if (row[0]==NULL) {
+					printf("No hi ha hagut resposta 11\n");
+					id = 0;
+				} else {
+					id = atoi(row[0]) + 1;
+				}
+
+				sprintf(consulta, "INSERT INTO partidas(id, fecha, hora, duracion, ganador) VALUES(%d, '%s', '%s', %f, '%s')", id, fecha, hora, duration, guanyador);
+				sprintf(consulta2, "%s%d)", consulta2, id);
+
+				err = mysql_query(conn, consulta);
+				if (err != 0)
+					printf("Error 12 al consultar datos de la base %u %s\n", mysql_errno(conn), mysql_error(conn));
+				else
+					printf("Success!\n");
+
+				err = mysql_query(conn, consulta2);
+				if (err != 0)
+					printf("Error 13 al consultar datos de la base %u %s\n", mysql_errno(conn), mysql_error(conn));
+				else
+					printf("Success!\n");
+
+				pthread_mutex_unlock( &mutex );
+			}
+			else
+				printf("Error en trobar les id d'algun(s) jugador(s)'");
+		}
+
 		
 		/////////////////////////////////////////////////////////////////
 		else if ((codigo ==1) || (codigo==2) || (codigo==3) || (codigo==4) || (codigo==10) || (codigo==11)|| (codigo==12))

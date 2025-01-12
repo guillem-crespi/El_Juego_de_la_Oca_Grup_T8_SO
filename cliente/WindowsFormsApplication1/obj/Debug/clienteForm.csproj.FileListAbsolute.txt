@@ -292,3 +292,4 @@ C:\Users\polpo\Desktop\FINAL\cliente\WindowsFormsApplication1\obj\Debug\WindowsF
 C:\Users\polpo\Desktop\FINAL\cliente\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.Properties.Resources.resources
 C:\Users\polpo\Desktop\FINAL\cliente\WindowsFormsApplication1\obj\Debug\clienteForm.csproj.GenerateResource.cache
 C:\Users\polpo\Desktop\FINAL\cliente\WindowsFormsApplication1\obj\Debug\clienteForm.csproj.CoreCompileInputs.cache
+C:\Users\roger\OneDrive\Escriptori\Escola\Universitat\3.1\Sistemes Operatius\Projecte\Proyecto\cliente\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.Form4.resources
