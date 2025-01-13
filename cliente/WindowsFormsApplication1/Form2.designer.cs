@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
             this.Resolution_Box = new System.Windows.Forms.ComboBox();
             this.button_Dados = new System.Windows.Forms.Button();
             this.Resultado = new System.Windows.Forms.TextBox();
@@ -44,7 +45,13 @@
             this.nJugadorLbl = new System.Windows.Forms.Label();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.ayudaToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.Chat = new System.Windows.Forms.GroupBox();
+            this.ChatTable = new System.Windows.Forms.DataGridView();
+            this.ChatSendBtn = new System.Windows.Forms.Button();
+            this.ChatTxtBox = new System.Windows.Forms.TextBox();
             this.menuStrip1.SuspendLayout();
+            this.Chat.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.ChatTable)).BeginInit();
             this.SuspendLayout();
             // 
             // Resolution_Box
@@ -63,7 +70,7 @@
             "500x500",
             "400x400",
             "300x300"});
-            this.Resolution_Box.Location = new System.Drawing.Point(65, 537);
+            this.Resolution_Box.Location = new System.Drawing.Point(80, 332);
             this.Resolution_Box.Margin = new System.Windows.Forms.Padding(4);
             this.Resolution_Box.Name = "Resolution_Box";
             this.Resolution_Box.Size = new System.Drawing.Size(188, 28);
@@ -87,7 +94,7 @@
             // 
             this.Resultado.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.Resultado.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Resultado.Location = new System.Drawing.Point(87, 143);
+            this.Resultado.Location = new System.Drawing.Point(90, 130);
             this.Resultado.Name = "Resultado";
             this.Resultado.ReadOnly = true;
             this.Resultado.Size = new System.Drawing.Size(38, 26);
@@ -97,7 +104,7 @@
             // 
             this.Resultado2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
             this.Resultado2.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Resultado2.Location = new System.Drawing.Point(153, 143);
+            this.Resultado2.Location = new System.Drawing.Point(156, 130);
             this.Resultado2.Name = "Resultado2";
             this.Resultado2.ReadOnly = true;
             this.Resultado2.Size = new System.Drawing.Size(38, 26);
@@ -107,7 +114,7 @@
             // 
             this.SumaResultado.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.SumaResultado.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.SumaResultado.Location = new System.Drawing.Point(153, 198);
+            this.SumaResultado.Location = new System.Drawing.Point(161, 163);
             this.SumaResultado.Name = "SumaResultado";
             this.SumaResultado.ReadOnly = true;
             this.SumaResultado.Size = new System.Drawing.Size(67, 19);
@@ -128,7 +135,7 @@
             this.radioButton1.Checked = true;
             this.radioButton1.Enabled = false;
             this.radioButton1.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.radioButton1.Location = new System.Drawing.Point(77, 304);
+            this.radioButton1.Location = new System.Drawing.Point(90, 190);
             this.radioButton1.Margin = new System.Windows.Forms.Padding(4);
             this.radioButton1.Name = "radioButton1";
             this.radioButton1.Size = new System.Drawing.Size(120, 24);
@@ -142,7 +149,7 @@
             this.radioButton2.AutoSize = true;
             this.radioButton2.Enabled = false;
             this.radioButton2.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.radioButton2.Location = new System.Drawing.Point(77, 335);
+            this.radioButton2.Location = new System.Drawing.Point(90, 221);
             this.radioButton2.Margin = new System.Windows.Forms.Padding(4);
             this.radioButton2.Name = "radioButton2";
             this.radioButton2.Size = new System.Drawing.Size(120, 24);
@@ -155,7 +162,7 @@
             this.radioButton3.AutoSize = true;
             this.radioButton3.Enabled = false;
             this.radioButton3.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.radioButton3.Location = new System.Drawing.Point(77, 368);
+            this.radioButton3.Location = new System.Drawing.Point(90, 254);
             this.radioButton3.Margin = new System.Windows.Forms.Padding(4);
             this.radioButton3.Name = "radioButton3";
             this.radioButton3.Size = new System.Drawing.Size(120, 24);
@@ -168,7 +175,7 @@
             this.radioButton4.AutoSize = true;
             this.radioButton4.Enabled = false;
             this.radioButton4.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.radioButton4.Location = new System.Drawing.Point(77, 399);
+            this.radioButton4.Location = new System.Drawing.Point(90, 285);
             this.radioButton4.Margin = new System.Windows.Forms.Padding(4);
             this.radioButton4.Name = "radioButton4";
             this.radioButton4.Size = new System.Drawing.Size(120, 24);
@@ -180,7 +187,7 @@
             // 
             this.Resolution_Lbl.AutoSize = true;
             this.Resolution_Lbl.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Resolution_Lbl.Location = new System.Drawing.Point(27, 521);
+            this.Resolution_Lbl.Location = new System.Drawing.Point(42, 316);
             this.Resolution_Lbl.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.Resolution_Lbl.Name = "Resolution_Lbl";
             this.Resolution_Lbl.Size = new System.Drawing.Size(189, 20);
@@ -191,7 +198,7 @@
             // 
             this.Resultado_Lbl.AutoSize = true;
             this.Resultado_Lbl.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.Resultado_Lbl.Location = new System.Drawing.Point(27, 198);
+            this.Resultado_Lbl.Location = new System.Drawing.Point(35, 163);
             this.Resultado_Lbl.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.Resultado_Lbl.Name = "Resultado_Lbl";
             this.Resultado_Lbl.Size = new System.Drawing.Size(109, 20);
@@ -234,6 +241,72 @@
             this.ayudaToolStripMenuItem.Text = "Ayuda";
             this.ayudaToolStripMenuItem.Click += new System.EventHandler(this.ayudaToolStripMenuItem_Click);
             // 
+            // Chat
+            // 
+            this.Chat.BackColor = System.Drawing.Color.White;
+            this.Chat.Controls.Add(this.ChatTable);
+            this.Chat.Font = new System.Drawing.Font("Courier New", 8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.Chat.ForeColor = System.Drawing.SystemColors.ControlText;
+            this.Chat.Location = new System.Drawing.Point(31, 363);
+            this.Chat.Name = "Chat";
+            this.Chat.Size = new System.Drawing.Size(247, 376);
+            this.Chat.TabIndex = 48;
+            this.Chat.TabStop = false;
+            this.Chat.Text = "Chat";
+            // 
+            // ChatTable
+            // 
+            this.ChatTable.AllowUserToAddRows = false;
+            this.ChatTable.AllowUserToDeleteRows = false;
+            this.ChatTable.AllowUserToResizeColumns = false;
+            this.ChatTable.AllowUserToResizeRows = false;
+            this.ChatTable.AutoSizeRowsMode = System.Windows.Forms.DataGridViewAutoSizeRowsMode.AllCells;
+            this.ChatTable.BackgroundColor = System.Drawing.Color.White;
+            this.ChatTable.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.ChatTable.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleLeft;
+            dataGridViewCellStyle1.BackColor = System.Drawing.SystemColors.Window;
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Courier New", 8F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            dataGridViewCellStyle1.ForeColor = System.Drawing.SystemColors.ControlText;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.ChatTable.DefaultCellStyle = dataGridViewCellStyle1;
+            this.ChatTable.EnableHeadersVisualStyles = false;
+            this.ChatTable.GridColor = System.Drawing.Color.White;
+            this.ChatTable.Location = new System.Drawing.Point(6, 19);
+            this.ChatTable.MultiSelect = false;
+            this.ChatTable.Name = "ChatTable";
+            this.ChatTable.ReadOnly = true;
+            this.ChatTable.RowHeadersVisible = false;
+            this.ChatTable.RowHeadersWidth = 62;
+            this.ChatTable.Size = new System.Drawing.Size(236, 351);
+            this.ChatTable.TabIndex = 48;
+            this.ChatTable.TabStop = false;
+            // 
+            // ChatSendBtn
+            // 
+            this.ChatSendBtn.BackColor = System.Drawing.Color.Thistle;
+            this.ChatSendBtn.Font = new System.Drawing.Font("Courier New", 10F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ChatSendBtn.Location = new System.Drawing.Point(208, 745);
+            this.ChatSendBtn.Name = "ChatSendBtn";
+            this.ChatSendBtn.Size = new System.Drawing.Size(70, 26);
+            this.ChatSendBtn.TabIndex = 50;
+            this.ChatSendBtn.Text = "Enviar";
+            this.ChatSendBtn.UseVisualStyleBackColor = false;
+            this.ChatSendBtn.Click += new System.EventHandler(this.ChatSendBtn_Click);
+            // 
+            // ChatTxtBox
+            // 
+            this.ChatTxtBox.Font = new System.Drawing.Font("Microsoft Sans Serif", 14.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ChatTxtBox.ForeColor = System.Drawing.Color.Black;
+            this.ChatTxtBox.ImeMode = System.Windows.Forms.ImeMode.NoControl;
+            this.ChatTxtBox.Location = new System.Drawing.Point(31, 745);
+            this.ChatTxtBox.Name = "ChatTxtBox";
+            this.ChatTxtBox.Size = new System.Drawing.Size(173, 34);
+            this.ChatTxtBox.TabIndex = 49;
+            this.ChatTxtBox.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.ChatTxtBox_KeyPress);
+            // 
             // Form2
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 16F);
@@ -242,6 +315,9 @@
             this.AutoSizeMode = System.Windows.Forms.AutoSizeMode.GrowAndShrink;
             this.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(236)))), ((int)(((byte)(228)))), ((int)(((byte)(4)))));
             this.ClientSize = new System.Drawing.Size(1351, 845);
+            this.Controls.Add(this.ChatTxtBox);
+            this.Controls.Add(this.Chat);
+            this.Controls.Add(this.ChatSendBtn);
             this.Controls.Add(this.nJugadorLbl);
             this.Controls.Add(this.label1);
             this.Controls.Add(this.Resultado_Lbl);
@@ -261,12 +337,14 @@
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "Form2";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Show;
-            this.Text = "Juego de la oca";
+            this.Text = "El Juego de la oca";
             this.WindowState = System.Windows.Forms.FormWindowState.Maximized;
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.Form2_FormClosed);
             this.Load += new System.EventHandler(this.Form2_Load);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
+            this.Chat.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.ChatTable)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -289,5 +367,9 @@
         private System.Windows.Forms.Label nJugadorLbl;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem ayudaToolStripMenuItem;
+        private System.Windows.Forms.GroupBox Chat;
+        private System.Windows.Forms.DataGridView ChatTable;
+        private System.Windows.Forms.Button ChatSendBtn;
+        private System.Windows.Forms.TextBox ChatTxtBox;
     }
 }
