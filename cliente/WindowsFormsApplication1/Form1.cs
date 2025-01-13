@@ -140,7 +140,7 @@ namespace WindowsFormsApplication1
             }
             if (ListadoJugadores.Checked) // CONSULTA 13 : LISTA DE JUGADORES DE PARTIDAS JUGADAS (CON UN JUGADOR-NOMBRE INTRODUCIDO POR TECLADO) (Requisito minimo) 
             {
-                string nombre = ConsultaNombre.Text;
+                string nombre = nickname;
                 if (string.IsNullOrWhiteSpace(nombre))
                 {
                     Resposta_Lbl.Invoke(new Action(() => Resposta_Lbl.Text = "El nombre no puede estar vacío."));
