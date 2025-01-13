@@ -138,7 +138,7 @@ namespace WindowsFormsApplication1
                 byte[] msg = Encoding.ASCII.GetBytes(mensaje);
                 server.Send(msg);
             }
-            if (ListadoJugadores.Checked) // CONSULTA 13 : LISTA DE JUGADORES DE PARTIDAS JUGADAS (CON UN JUGADOR-NOMBRE INTRODUCIDO POR TECLADO) (Requisito minimo) 
+            if (ListadoJugadores.Checked) // CONSULTA 13 : LISTA DE JUGADORES DE PARTIDAS JUGADAS POR EL JUGADOR (Requisito minimo) 
             {
                 string nombre = nickname;
                 if (string.IsNullOrWhiteSpace(nombre))
