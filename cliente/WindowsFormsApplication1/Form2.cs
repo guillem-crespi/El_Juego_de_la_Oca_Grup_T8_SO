@@ -296,17 +296,7 @@ namespace WindowsFormsApplication1
         //Evento para pintar las fichas en el tablero
         private void tablero_Paint(object sender, PaintEventArgs e)
         {
-            float res = resolution;
-            /*    
-                int[] coord1 = new int[2];
-                int[] coord2 = new int[2];
-                int[] coord3 = new int[2];
-                int[] coord4 = new int[2];
-                coord1 = GetCoordinates(casillas, casillasJugador, 1);
-                coord2 = GetCoordinates(casillas, casillasJugador, 2);
-                coord3 = GetCoordinates(casillas, casillasJugador, 3);
-                coord4 = GetCoordinates(casillas, casillasJugador, 4);*/
-          
+            float res = resolution;          
             int[] coord1 = GetCoordinates(casillas, casillasJugador, 1);
             int[] coord2 = GetCoordinates(casillas, casillasJugador, 2);
             int[] coord3 = GetCoordinates(casillas, casillasJugador, 3);

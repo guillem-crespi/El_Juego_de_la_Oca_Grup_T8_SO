@@ -42,25 +42,21 @@ int id = 0;
 int Registrarse (char p[200], char respuesta[20])
 {
 	//Peticion
-	char nombre_usuario[20];
+	char nombre_usuario[20], contra[20];
 	p = strtok(NULL,"/");
 	strcpy(nombre_usuario, p);
-	
-	char contra[20];
 	p = strtok(NULL,"/");
 	strcpy(contra, p);											
 	
 	printf("Solicitud de registro recibida: Usuario: %s Contrase�a: %s \n", nombre_usuario, contra);
 	
-	char consulta[512];
 	sprintf(consulta,"SELECT jugadores.nombre_usuario FROM jugadores WHERE jugadores.nombre_usuario = '%s'", nombre_usuario);
-	
 	err = mysql_query (conn, consulta);
 	if (err != 0)
 	{
 		printf ("Error al consultar datos de la base %u %s \n", mysql_errno(conn), mysql_error(conn));
 		strcpy(respuesta,"2/ERROR_DB");
-		exit(1);
+		return -1;
 	}
 	resultado = mysql_store_result (conn);
 	row=mysql_fetch_row(resultado);
@@ -75,7 +71,7 @@ int Registrarse (char p[200], char respuesta[20])
 		{
 			printf ("Error al obtener el ID m�ximo %u %s \n", mysql_errno(conn), mysql_error(conn));
 			strcpy(respuesta, "2/ERROR_DB");
-			exit(1);
+			return -1;
 		}
 		resultado = mysql_store_result (conn);
 		row=mysql_fetch_row(resultado);
@@ -90,7 +86,7 @@ int Registrarse (char p[200], char respuesta[20])
 		{
 			printf ("Error al a�adir el nuevo jugador: %u %s \n", mysql_errno(conn), mysql_error(conn));
 			strcpy(respuesta, "2/ERROR_DB");
-			exit(1);
+			return -1;
 		}
 		printf("Usuario '%s' registrado correctamente con ID %d.\n", nombre_usuario, id);
 		sprintf(respuesta, "2/0"); //Indicar que el registro fue exitoso
@@ -100,47 +96,20 @@ int Registrarse (char p[200], char respuesta[20])
 		printf("El usuario '%s' ya est� registrado.\n", nombre_usuario);
 		sprintf(respuesta, "2/-1"); //Indicar que el usuario ya existe
 	}
+	return 0;
 }
-//-----------------------------------------------------------------------------
-//----------------------------------------------------------------------------- DARSE DE BAJA
-void DarseBaja(char p[200], char respuesta[200])
-{
-	//Peticion
-	char nombre_usuario[20];
-	p = strtok( NULL, "/");
-	strcpy(nombre_usuario, p);
-	
-	char contra[20];
-	p = strtok(NULL, "/");
-	strcpy(contra, p);
-	
-	printf("Solicitud para darse de baja: Usuario: %s Contrase�a: %s \n", nombre_usuario, contra);
-	
-	//Eliminar los datos de jugador de la base de datos
-	char consulta[512];
-	sprintf(consulta, "DELETE FROM jugadores WHERE (nombre_usuario = '%s' AND password = '%s')", nombre_usuario, contra);
-	
-	err = mysql_query(conn, consulta);
-	if (err != 0) {
-		printf("Error al consultar datos de la base %u %s\n", mysql_errno(conn), mysql_error(conn));
-		strcpy(respuesta, "5/ERROR_DB");
-	}
-	else 
-	{
-	printf("Usuario '%s' eliminado de la base de datos\n", nombre_usuario);
-	sprintf(respuesta, "5/DELETED_SUCCESSFUL");
-	}
+void ProcesoRegistro(int sock_conn, char *p) {
+    Registrarse(p, respuesta);
+    printf("%s\n", respuesta);
+    write(sock_conn, respuesta, strlen(respuesta));
 }
-//-----------------------------------------------------------------------------
 //----------------------------------------------------------------------------- LOGIN
 int LogIn(char p[200], char respuesta[20])
 {
 	//peticion
-	char nombre_usuario[20];
+	char nombre_usuario[20], contra[20];
 	p = strtok( NULL, "/");
 	strcpy(nombre_usuario, p);
-	
-	char contra[20];
 	p = strtok(NULL, "/");
 	strcpy(contra, p);
 	
@@ -148,22 +117,21 @@ int LogIn(char p[200], char respuesta[20])
 
 	//Primero miramos ya hay un usuario con el mismo nombre conectado
 	int resp = DamePosicionNombre(nombre_usuario);
-
 	if (resp != -1) {
 		printf("Jugador ya conectado\n");
 		strcpy(respuesta, "1/ALREADY_IN");
-	} else {
+		return -1;
+	} 
+	else 
+	{
 		//Consultamos si el usuario existe 
-		char consulta_usuario[512];
-		sprintf(consulta_usuario, "SELECT nombre_usuario FROM jugadores WHERE nombre_usuario = '%s'", nombre_usuario);
-	
-		err = mysql_query(conn, consulta_usuario);
+		sprintf(consulta, "SELECT nombre_usuario FROM jugadores WHERE nombre_usuario = '%s'", nombre_usuario);
+		err = mysql_query(conn, consulta);
 		if (err != 0) {
 			printf("Error al consultar datos de la base %u %s\n", mysql_errno(conn), mysql_error(conn));
 			strcpy(respuesta, "1/ERROR_DB");
-			exit(1);
+			return -1;
 		}
-	
 		//Almacenamos y verificamos el resultado
 		resultado = mysql_store_result(conn);
 		row = mysql_fetch_row(resultado);
@@ -175,15 +143,13 @@ int LogIn(char p[200], char respuesta[20])
 		}
 		else 
 		{
-			//Si el usuario existe, verificamos la contrase�a
-			char consulta_contra[512];
-			sprintf(consulta_contra, "SELECT nombre_usuario FROM jugadores WHERE nombre_usuario = '%s' AND password = '%s'", nombre_usuario, contra);
-		
-			err = mysql_query(conn, consulta_contra);
+			//Si el usuario existe, verificamos la contrasena
+			sprintf(consulta, "SELECT nombre_usuario FROM jugadores WHERE nombre_usuario = '%s' AND password = '%s'", nombre_usuario, contra);
+			err = mysql_query(conn, consulta);
 			if (err != 0) {
 				printf("Error al consultar datos de la base %u %s\n", mysql_errno(conn), mysql_error(conn));
 				strcpy(respuesta, "1/ERROR_DB");
-				exit(1);
+				return -1;
 			}
 			//Verificamos si hay resultados
 			resultado = mysql_store_result(conn);
@@ -206,12 +172,167 @@ int LogIn(char p[200], char respuesta[20])
 			}
 		}
 	}
+	return 0;
 }
-//-----------------------------------------------------------------------------
-//----------------------------------------------------------------------------- CONECTADOS
+void ProcesoLogIn(int sock_conn, char *p) {
+    LogIn(p, respuesta);
+    printf("%s\n", respuesta); // Escribir respuesta del cliente por consola en el servidor "LOGIN_SUCCESSFUL"
+    write(sock_conn, respuesta, strlen(respuesta));        
+    DameConectados(respuesta);
+    sprintf(respuesta, "1/%s", respuesta);
+    for (int i = 0; i < numSocket; i++) {
+        write(sockets[i], respuesta, strlen(respuesta));
+    }
+}
+//----------------------------------------------------------------------------- DARSE DE BAJA
+void DarseBaja(char p[200], char respuesta[200])
+{
+    // Petición: obtener nombre de usuario y contraseña
+    char nombre_usuario[20];
+    p = strtok(NULL, "/");
+    if (p == NULL) {
+        strcpy(respuesta, "5/ERROR_FECHA");
+        return;
+    }
+    strcpy(nombre_usuario, p);
 
-//Anade nuevo conectados
-//retorna 0 si ok y -1 si la lista ya estaba llena 
+    char contra[20];
+    p = strtok(NULL, "/");
+    if (p == NULL) {
+        strcpy(respuesta, "5/ERROR_FECHA");
+        return;
+    }
+    strcpy(contra, p);
+
+    printf("Solicitud para darse de baja: Usuario: %s Contraseña: %s \n", nombre_usuario, contra);
+
+    // Obtener el ID del usuario
+    char consulta[512];
+    sprintf(consulta, "SELECT id FROM jugadores WHERE nombre_usuario = '%s' AND password = '%s'", nombre_usuario, contra);
+
+    int err = mysql_query(conn, consulta);
+    if (err != 0) {
+        printf("Error al consultar datos de la base %u %s\n", mysql_errno(conn), mysql_error(conn));
+        strcpy(respuesta, "5/ERROR_DB");
+        return;
+    }
+
+    MYSQL_RES *resultado = mysql_store_result(conn);
+    if (resultado == NULL) {
+        printf("Error al obtener el resultado %u %s\n", mysql_errno(conn), mysql_error(conn));
+        strcpy(respuesta, "5/ERROR_DB");
+        return;
+    }
+
+    MYSQL_ROW row = mysql_fetch_row(resultado);
+    if (row == NULL) {
+        printf("Usuario o contraseña incorrectos\n");
+        strcpy(respuesta, "5/USER_NOT_FOUND");
+        mysql_free_result(resultado); // Liberar el resultado de la consulta
+        return;
+    }
+
+    int user_id = atoi(row[0]);
+    mysql_free_result(resultado); // Liberar el resultado de la consulta
+
+    // Iniciar una transacción para asegurar consistencia
+    mysql_query(conn, "START TRANSACTION");
+
+    // Eliminar las entradas de info_partida asociadas con el usuario
+    sprintf(consulta, "DELETE FROM info_partida WHERE jugador1 = %d OR jugador2 = %d OR jugador3 = %d OR jugador4 = %d", user_id, user_id, user_id, user_id);
+    err = mysql_query(conn, consulta);
+    if (err != 0) {
+        printf("Error al eliminar datos de info_partida %u %s\n", mysql_errno(conn), mysql_error(conn));
+        strcpy(respuesta, "5/ERROR_DB");
+        mysql_query(conn, "ROLLBACK"); // Revertir la transacción
+        return;
+    }
+
+    // Eliminar el usuario de la tabla jugadores
+    sprintf(consulta, "DELETE FROM jugadores WHERE id = %d", user_id);
+    err = mysql_query(conn, consulta);
+    if (err != 0) {
+        printf("Error al eliminar datos de jugadores %u %s\n", mysql_errno(conn), mysql_error(conn));
+        strcpy(respuesta, "5/ERROR_DB");
+        mysql_query(conn, "ROLLBACK"); // Revertir la transacción
+        return;
+    }
+
+    // Confirmar la transacción
+    mysql_query(conn, "COMMIT");
+
+    printf("Usuario '%s' eliminado de la base de datos\n", nombre_usuario);
+    sprintf(respuesta, "5/DELETED_SUCCESSFUL");
+}
+
+int username_exists(const char *username, MYSQL *conn) {
+    char consulta[512];
+    sprintf(consulta, "SELECT id FROM jugadores WHERE nombre_usuario = '%s'", username);
+
+    int err = mysql_query(conn, consulta);
+    if (err != 0) {
+        printf("Error al consultar datos de la base %u %s\n", mysql_errno(conn), mysql_error(conn));
+        return 0;
+    }
+
+    MYSQL_RES *resultado = mysql_store_result(conn);
+    if (resultado == NULL) {
+        printf("Error al obtener el resultado %u %s\n", mysql_errno(conn), mysql_error(conn));
+        return 0;
+    }
+
+    MYSQL_ROW row = mysql_fetch_row(resultado);
+    int exists = row != NULL;
+    mysql_free_result(resultado); // Liberar el resultado de la consulta
+    return exists;
+}
+//
+void ProcesoDarseBaja(int sock_conn, char *p) {
+	DarseBaja(p, respuesta);
+	printf("%s\n", respuesta); 
+	write(sock_conn, respuesta, strlen(respuesta));
+
+	// Eliminar el usuario de la base de datos
+	if (EliminarUsuarioDeBaseDeDatos(p)) {
+		printf("Usuario eliminado de la base de datos\n");
+	} else {
+		printf("Error eliminando el usuario de la base de datos\n");
+	}
+
+	if (QuitarJugador(&sock_conn)) {
+		printf("Usuario eliminado de la lista de usuarios conectados\n");
+		for (int i = 0; i < miLista.num; i++) {
+			printf("Nombre: %s\nSocket: %d\n\n", miLista.conectados[i].nombre, miLista.conectados[i].socket);
+		}
+}
+DameConectados(respuesta);
+sprintf(respuesta, "4/%s", respuesta);
+printf("%s", respuesta);
+for (int i = 0; i < numSocket; i++) {
+	write(sockets[i], respuesta, strlen(respuesta));
+}
+//----------------------------------------------------------------------------- CHAT
+void ProcesoChat(int sock_conn, char *p) {
+	char nPartida[10], nombre[20], mesnsaje[512];
+				
+	p = strtok(NULL, "/");
+	strcpy(nPartida, p);
+	p = strtok(NULL, "/");
+	strcpy(nombre, p);
+	char mensaje[512];
+	p = strtok(NULL, "/");
+	strcpy(mensaje, p);
+
+	sprintf(respuesta, "%d/%s/%s/%s", codigo, nPartida, nombre, menssaje);
+	printf("%s\n", respuesta);
+	for (int i = 0; i < numSocket; i++) {
+		write(sockets[i], respuesta, strlen(respuesta));
+	}
+}
+//----------------------------------------------------------------------------- PROCESOS DE
+//----------------------------------------------------------------------------- LISTA DE CONECTADOS
+
+//Anade nuevo conectados, retorna 0 si ok y -1 si la lista ya estaba llena 
 int PonConectado (char nombre[20], int *socket)
 {
 	if (miLista.num == 100)
@@ -224,14 +345,12 @@ int PonConectado (char nombre[20], int *socket)
 	}
 }
 
-// Pone en conectados los nombres de todos los conectados separados por "/". 
-// primero pone el numero de conectados
+// Pone en conectados los nombres de todos los conectados separados por "/". Primero pone el numero de conectados
 void DameConectados (char conectado[300])
 {
 	char conectados[300];
 	sprintf(conectados, "%d/", miLista.num);
-	int i;
-	for (i = 0; i < miLista.num; i++){
+	for (int i = 0; i < miLista.num; i++){
 		sprintf(conectados, "%s%s/", conectados, miLista.conectados[i].nombre);
 	}
 	printf("Conectados:%s \n", conectados);
@@ -239,67 +358,507 @@ void DameConectados (char conectado[300])
 }
 
 // Devuelve la posicion en la lista o -1 si no esta en la lista
-int DamePosicionNombre (char name[20]) 
-{
-	int i = 0;
-	int encontrado = 0;
-	while ((i < miLista.num) && encontrado == 0)
-	{
-		if (strcmp(miLista.conectados[i].nombre, name) == 0)
-			encontrado = 1;
-		if (encontrado == 0)
-			i++;
-	}
-	if (encontrado == 1)
+int DamePosicionNombre (char name[20]) {
+	for (int i = 0; i < miLista.num; i++){
+		if (strcmp(miLista.conectados[i].nombre, name) == 0);
 		return i;
-	else
-		return -1;
+	}
+	return -1;
 }
 
-int DamePosicionSocket (int *socket) 
-{
-	int i = 0;
-	int encontrado = 0;
-	while ((i< miLista.num) && encontrado == 0)
-	{
+int DamePosicionSocket (int *socket) {
+	for (int i = 0; i < miLista.num; i++){
 		if (miLista.conectados[i].socket == *socket)
-			encontrado = 1;
-		if (encontrado == 0)
-			i++;
-	}
-	if (encontrado == 1)
 		return i;
-	else
-		return -1;
+	}
+	return -1;
 }
 
-int QuitarJugador(int *socket) 
-{
-	//Busca el socket del jugador para sacarlo de la lista de conectados
-	int found = 0;
-
+//Busca el socket del jugador para sacarlo de la lista de conectados
+int QuitarJugador(int *socket) {
+	
+	pthread_mutex_lock( &mutex );
 	for (int i = 0; i < miLista.num && !found; i++) {
 		if (miLista.conectados[i].socket == *socket) {
-			for (int j = 0; j < numSocket && !found; j++) {
-				if (sockets[j] == *socket) {
-					pthread_mutex_lock( &mutex );
-					sockets[j] = sockets[numSocket - 1];
-					numSocket--;
-					found = 1;
-				}
-			}
+		
+			sockets[i] = sockets[numSocket - 1];
+			numSocket--;
 			miLista.conectados[i] = miLista.conectados[miLista.num-1];
-			miLista.num = miLista.num - 1;
-			pthread_mutex_unlock( &mutex );
+			miLista.num--;		
+		}
+	}	
+	pthread_mutex_unlock( &mutex );
+	return 0;
+}	
+void ProcesoQuitarJugador(int sock_conn, char *p) {
+	if(QuitarJugador(&sock_conn)) {
+		printf("Usuario eliminado de la lista,usuarios conectados:\n");
+		for (int i = 0; i < miLista.num; i++) {
+			printf("Nombre: %s\nSocket: %d\n\n", miLista.conectados[i].nombre, miLista.conectados[i].socket);
 		}
 	}
-
-	if (found) {
-		return 1;	//True
-	
-	return 0;		//False
+	DameConectados (respuesta);
+	sprintf (respuesta, "3/%s", `respuesta);
+	printf("%s", respuesta);
+	for (int i = 0; i < numSocket; i++) {
+		write (sockets[i], respuesta, strlen(respuesta));
+	}
 }
-//-----------------------------------------------------------------------------
+//----------------------------------------------------------------------------- INVITACIONES
+void ProcesoInvitar(int sock_conn, char *p) {
+	char nombre1[20];   // Personas que son invitadas
+	char nombre2[20];
+	char nombre3[20];
+	char nombre4[20];   // Persona que invita
+	int turnos[3];
+	int numJugador;
+
+	p = strtok(NULL, "/");
+	printf("numJugadores: %s\n", p);
+	numJugador = atoi(p);
+	p = strtok(NULL, "/");
+	strcpy(nombre1, p);
+
+	if (numJugador >= 1 && numJugador <= 3) {
+		p = strtok(NULL, "/");
+		if (numJugador >= 2) {
+			strcpy(nombre2, p);
+			p = strtok(NULL, "/");
+		}
+		if (numJugador == 3) {
+			strcpy(nombre3, p);
+			p = strtok(NULL, "/");
+		}
+		strcpy(nombre4, p);
+
+		for (int i = 0; i < numJugador; i++) {
+			p = strtok(NULL, "/");
+			turnos[i] = atoi(p);
+		}
+
+		char *nombres[] = {nombre1, nombre2, nombre3};
+		for (int i = 0; i < numJugador; i++) {
+			for (int j = 0; j < miLista.num; j++) {
+				if (strcmp(nombres[i], miLista.conectados[j].nombre) == 0) {
+					sprintf(respuesta, "6/%s/%d", nombre4, turnos[i]);
+					write(miLista.conectados[j].socket, respuesta, strlen(respuesta));
+					break;
+				}
+			}
+		}
+	}
+	printf("%s\n", respuesta);
+}
+void ProcesoAceptarRechazar(int sock_conn, char *p) {
+	char res[10], nombre[20], invitado[20];
+				
+	p = strtok(NULL, "/");
+	strcpy(res, p);
+	p = strtok(NULL, "/");
+	strcpy(nombre, p);
+	p = strtok(NULL, "/");
+	strcpy(invitado, p);
+
+	int resp = DamePosicionNombre(nom);	//Buscamos el socket de la persona que invita per responderle si han acceptado o no
+
+	if (strcmp(res, "OK") == 0) {
+		sprintf(respuesta, "7/OK/%s", invitado);
+	}
+	else {
+		sprintf(respuesta, "7/NO/%s", invitado);
+	}
+	printf("%s\n", respuesta);
+	write(miLista.conectados[resp].socket, respuesta, strlen(respuesta));
+}
+
+//----------------------------------------------------------------------------- PROCESOS DE
+//----------------------------------------------------------------------------- JUEGO DE LA OCA
+
+void ProcesoEmpezarJugar(int sock_conn, char *p) {
+	int nJugadores;
+	char J1[20], J2[20], J3[20], J4[20];
+	int j = 0;
+
+	p = strtok(NULL, "/");
+	nJugadores = atoi(p);
+	sprintf(respuesta, "8/%d/%d", nJugadores, nPartidas);
+
+	for (int i = 0; i < nJugadores; i++) {
+		p = strtok(NULL, "/");
+		sprintf(respuesta, "%s/%s", respuesta, p);
+		j++;
+		switch (j) {
+			case 1:
+				strcpy(J1, p);
+				break;
+			case 2:
+				strcpy(J2, p);
+				break;
+			case 3:
+				strcpy(J3, p);
+				break;
+			case 4:
+				strcpy(J4, p);
+				break;
+		}
+	}
+	printf("%s\n", respuesta);
+
+	for (int i = 0; i < miLista.num; i++) {
+		if (strcmp(miLista.conectados[i].nombre, J1) == 0 || strcmp(miLista.conectados[i].nombre, J2) == 0 ||
+			(nJugadores > 2 && strcmp(miLista.conectados[i].nombre, J3) == 0) ||
+			(nJugadores > 3 && strcmp(miLista.conectados[i].nombre, J4) == 0)) {
+			write(miLista.conectados[i].socket, respuesta, strlen(respuesta));
+		}
+	}
+	nPartidas++;
+}
+
+void ProcesoMoverFichas(int sock_conn, char *p) {
+	int nPartida, D1, D2;
+	char J1[20], J2[20], J3[20], J4[20];
+
+	p = strtok(NULL, "/");
+	nPartida = atoi(p);
+	p = strtok(NULL, "/");
+	D1 = atoi(p);
+	p = strtok(NULL, "/");
+	D2 = atoi(p);
+	p = strtok(NULL, "/");
+	strcpy(J1, p);
+	p = strtok(NULL, "/");
+	strcpy(J2, p);
+	p = strtok(NULL, "/");
+	strcpy(J3, p);
+	p = strtok(NULL, "/");
+	strcpy(J4, p);
+
+	sprintf(respuesta, "9/%d/%d/%d/%s/%s/%s/%s", nPartida, D1, D2, J1, J2, J3, J4);
+	printf("%s\n", respuesta);
+
+	char *jugadores[] = {J1, J2, J3, J4};
+
+	for (int j = 0; j < 4; j++) {
+		if (strcmp("NO", jugadores[j]) != 0) {
+			for (int i = 0; i < miLista.num; i++) {
+				if (strcmp(miLista.conectados[i].nombre, jugadores[j]) == 0) {
+					write(miLista.conectados[i].socket, respuesta, strlen(respuesta));
+					break;
+				}
+			}
+		}
+	}
+}
+
+void ProcesoAbandonarPartida(int sock_conn, char *p) {
+	int nPartida;
+	char J1[20], J2[20], J3[20], J4[20];
+
+	p = strtok(NULL, "/");
+	nPartida = atoi(p);
+	p = strtok(NULL, "/");
+	strcpy(J1, p);
+	p = strtok(NULL, "/");
+	strcpy(J2, p);
+	p = strtok(NULL, "/");
+	strcpy(J3, p);
+	p = strtok(NULL, "/");
+	strcpy(J4, p);
+
+	sprintf(respuesta, "10/%d/%s/%s/%s/%s", nPartida, J1, J2, J3, J4);
+	printf("%s\n", respuesta);
+
+	char *jugadores[] = {J1, J2, J3, J4};
+
+	for (int j = 0; j < 4; j++) {
+		if (strcmp("NO", jugadores[j]) != 0) {
+			for (int i = 0; i < miLista.num; i++) {
+				if (strcmp(miLista.conectados[i].nombre, jugadores[j]) == 0) {
+					write(miLista.conectados[i].socket, respuesta, strlen(respuesta));
+					break;
+				}
+			}
+		}
+	}
+}
+
+//----------------------------------------------------------------------------- ACTUALIZAR BBDD
+void ProcesoActualizarBBDD(int sock_conn, char *p) {		
+    int id, P1, P2, P3, P4, nJugadors, error = 0;
+    char fecha[25], hora[20], guanyador[20], J1[20], J2[20], J3[20], J4[20];
+    char consulta[512], consulta2[512], consulta_playerID[512];
+    float duration;
+
+    p = strtok(NULL, "/");
+    strcpy(fecha, p);
+    p = strtok(NULL, "/");
+    strcpy(hora, p);
+    p = strtok(NULL, "/");
+    duration = atof(p);
+    p = strtok(NULL, "/");
+    strcpy(guanyador, p);
+    p = strtok(NULL, "/");
+    strcpy(J1, p);
+    p = strtok(NULL, "/");
+    strcpy(J2, p);
+    p = strtok(NULL, "/");
+    strcpy(J3, p);
+    p = strtok(NULL, "/");
+    strcpy(J4, p);
+
+    nJugadors = (strcmp(J4, "NO") == 0) ? ((strcmp(J3, "NO") == 0) ? 2 : 3) : 4;
+
+    char *jugadores[] = {J1, J2, J3, J4};
+    int *jugadorIDs[] = {&P1, &P2, &P3, &P4};
+
+    for (int i = 0; i < nJugadors; i++) {
+        snprintf(consulta_playerID, sizeof(consulta_playerID), "SELECT id FROM jugadores WHERE nombre_usuario = '%s'", jugadores[i]);
+        if (mysql_query(conn, consulta_playerID) != 0) {
+            printf("Error al consultar datos de la base %u %s\n", mysql_errno(conn), mysql_error(conn));
+            error = 1;
+            break;
+        }
+        resultado = mysql_store_result(conn);
+        row = mysql_fetch_row(resultado);
+        if (row == NULL) {
+            printf("No se encontró al jugador %d\n", i + 1);
+            error = 1;
+            break;
+        }
+        *jugadorIDs[i] = atoi(row[0]);
+        mysql_free_result(resultado);
+    }
+
+    if (error == 0) {
+        pthread_mutex_lock(&mutex);
+
+        // Obtener el próximo id de partida
+        snprintf(consulta, sizeof(consulta), "SELECT IFNULL(MAX(id), 0) + 1 FROM partidas");
+        if (mysql_query(conn, consulta) != 0) {
+            printf("Error al consultar datos de la base %u %s\n", mysql_errno(conn), mysql_error(conn));
+            pthread_mutex_unlock(&mutex);
+            return;
+        }
+        resultado = mysql_store_result(conn);
+        row = mysql_fetch_row(resultado);
+        id = atoi(row[0]);
+        mysql_free_result(resultado);
+
+        // Insertar nueva partida
+        snprintf(consulta, sizeof(consulta), "INSERT INTO partidas(id, fecha, hora, duracion, ganador) VALUES(%d, '%s', '%s', %f, '%s')", id, fecha, hora, duration, guanyador);
+        if (mysql_query(conn, consulta) != 0) {
+            printf("Error al insertar datos en la tabla partidas %u %s\n", mysql_errno(conn), mysql_error(conn));
+            pthread_mutex_unlock(&mutex);
+            return;
+        }
+
+        // Insertar info de la partida
+		if (nJugadors == 2) {
+            snprintf(consulta2, sizeof(consulta2), "INSERT INTO info_partida(jugador1, jugador2, partida) VALUES(%d, %d, %d)", P1, P2, id);
+        } else if (nJugadors == 3) {
+            snprintf(consulta2, sizeof(consulta2), "INSERT INTO info_partida(jugador1, jugador2, jugador3, partida) VALUES(%d, %d, %d, %d)", P1, P2, P3, id);
+        } else {
+            snprintf(consulta2, sizeof(consulta2), "INSERT INTO info_partida(jugador1, jugador2, jugador3, jugador4, partida) VALUES(%d, %d, %d, %d, %d)", P1, P2, P3, P4, id);
+        }
+
+        if (mysql_query(conn, consulta2) != 0) {
+            printf("Error al insertar datos en la tabla info_partida %u %s\n", mysql_errno(conn), mysql_error(conn));
+        } else {
+            printf("Datos de la partida y jugadores insertados correctamente.\n");
+        }
+
+        pthread_mutex_unlock(&mutex);
+    } else {
+        printf("Error al encontrar algún id(s) de jugador(es)\n");
+    }
+}
+//----------------------------------------------------------------------------- CONSULTAS
+void DuracionPartidasJugador(int sock_conn, char *p) // DEVUELVE DURACION TOTAL DE PARTIDAS GANADAS DE UN JUGADOR-NOMBRE INTRODUCIDO POR TECLADO
+{
+	char nombre_usuario[30];
+	p = strtok(NULL, "/"); 
+	strcpy(nombre_usuario, p);
+			
+	char consulta[512];
+	printf("El nombre del jugador seleccionado es: '%s'\n", nombre_usuario);
+			
+	sprintf(consulta, "SELECT SUM(partidas.duracion) FROM (partidas) WHERE partidas.ganador = '%s'",nombre_usuario);
+			
+	err= mysql_query (conn, consulta);
+	if (err!=0) {
+		printf ("Error al consultar datos de la base %u %s\n", mysql_errno(conn), mysql_error(conn));
+		strcpy(respuesta, "12/ERROR_DB");
+	}
+			
+	resultado = mysql_store_result(conn);
+	row = mysql_fetch_row(resultado);
+			
+	if (row[0]==NULL)
+		sprintf(respuesta, "12/ERROR_DB");
+			
+	else
+		sprintf(respuesta, "12/%s", row[0]);
+			
+	printf("%s\n", respuesta);
+	write(sock_conn, respuesta, strlen(respuesta));
+}
+
+void ResultadoContrincantes(int sock_conn, char *p) // DEVUELVE LISTA DE JUGADORES DE PARTIDAS JUGADAS POR EL USUARIO QUE CONSULTA (uno mismo)
+{
+	char consulta[512], nombre_usuario[20];
+
+	p = strtok(NULL, "/");
+	if (p == NULL) {
+		sprintf(respuesta, "13/ERROR_INVALID_INPUT");
+		write(sock_conn, respuesta, strlen(respuesta));
+		break;
+	}
+	strcpy(nombre_usuario, p);
+
+	snprintf(consulta, sizeof(consulta),
+		"SELECT DISTINCT jugadores.nombre_usuario "
+		"FROM jugadores "
+		"JOIN info_partida ON jugadores.id IN (info_partida.jugador1, info_partida.jugador2, info_partida.jugador3, info_partida.jugador4) "
+		"WHERE info_partida.partida IN ("
+		"    SELECT partida "
+		"    FROM info_partida "
+		"    JOIN jugadores ON jugadores.id IN (info_partida.jugador1, info_partida.jugador2, info_partida.jugador3, info_partida.jugador4) "
+		"    WHERE jugadores.nombre_usuario = '%s'"
+		") AND jugadores.nombre_usuario != '%s'",
+		nombre_usuario, nombre_usuario);
+
+	if (mysql_query(conn, consulta) != 0) {
+		printf("Error al consultar datos de la base %u %s\n", mysql_errno(conn), mysql_error(conn));
+		sprintf(respuesta, "13/ERROR_DB");
+		write(sock_conn, respuesta, strlen(respuesta));
+		break;
+	}
+
+	resultado = mysql_store_result(conn);
+	if (resultado == NULL) {
+		printf("Error al almacenar el resultado de la consulta %u %s\n", mysql_errno(conn), mysql_error(conn));
+		sprintf(respuesta, "13/ERROR_DB");
+		write(sock_conn, respuesta, strlen(respuesta));
+		break;
+	}
+
+	row = mysql_fetch_row(resultado);
+
+	if (row == NULL) {
+		sprintf(respuesta, "13/NO_RESULTS_FOUND");
+	} else {
+		sprintf(respuesta, "13/");
+		while (row != NULL) {
+			if (strcmp(nombre_usuario, row[0]) != 0) {
+				strcat(respuesta, row[0]);
+				strcat(respuesta, "/");
+			}
+			row = mysql_fetch_row(resultado);
+		}
+		printf("%s\n", respuesta);
+	}
+
+	write(sock_conn, respuesta, strlen(respuesta));
+	mysql_free_result(resultado);
+}
+
+void ListaPartidasPeriodo(int sock_conn, char *p) // LISTA DE PARTIDAS JUGADAS EN UN PERIODIO INTRODUCIDO POR TECLADO 
+{
+    char fecha[50], consulta[512];
+    MYSQL_RES *resultado;
+    MYSQL_ROW row;
+
+    // Obtener la fecha
+    p = strtok(NULL, "/");
+    if (p == NULL) {
+        printf("Error: fecha no encontrada\n");
+        sprintf(respuesta, "14/ERROR_INVALID_INPUT");
+        write(sock_conn, respuesta, strlen(respuesta));
+        return;
+    }
+    strcpy(fecha, p);
+
+    // Preparar la consulta
+    snprintf(consulta, sizeof(consulta),
+             "SELECT partidas.id, partidas.ganador "
+             "FROM partidas "
+             "JOIN info_partida ON partidas.id = info_partida.partida "
+             "WHERE partidas.fecha = '%s'", fecha);
+
+    printf("Consulta: %s\n", consulta);
+
+    // Ejecutar la consulta
+    if (mysql_query(conn, consulta) != 0) {
+        printf("Error al consultar datos de la base %u %s\n", mysql_errno(conn), mysql_error(conn));
+        strcpy(respuesta, "14/ERROR_DB");
+        write(sock_conn, respuesta, strlen(respuesta));
+        return;
+    }
+
+    resultado = mysql_store_result(conn);
+    if (!resultado) {
+        printf("Error al obtener resultados %u %s\n", mysql_errno(conn), mysql_error(conn));
+        strcpy(respuesta, "14/ERROR_DB");
+        write(sock_conn, respuesta, strlen(respuesta));
+        return;
+    }
+
+    // Formatear la respuesta
+    strcpy(respuesta, "14/");
+    while ((row = mysql_fetch_row(resultado)) != NULL) {
+        strcat(respuesta, row[0]); // ID de la partida
+        strcat(respuesta, "/");
+        strcat(respuesta, row[1]); // Nombre del ganador
+        strcat(respuesta, "/");
+    }
+    mysql_free_result(resultado);
+
+    printf("%s\n", respuesta);
+    write(sock_conn, respuesta, strlen(respuesta));
+}
+
+void ResultadoPartidas(int sock_conn, char *p) // DEVUELVE EL RESULTADO DE PARTIDAS JUGADAS CONTRA UN JUGADOR-NOMBRE INTRODUCIDO POR TECLADO 
+{
+	char consulta[512];
+	char J1[20];
+	char J2[20];
+
+	p = strtok(NULL, "/");
+	strcpy(J1, p);
+	p = strtok(NULL, "/");
+	strcpy(J2, p);
+
+	sprintf(consulta,
+		"SELECT partidas.id, partidas.ganador "
+		"FROM partidas "
+		"JOIN info_partida ON partidas.id = info_partida.partida "
+		"JOIN jugadores J1 ON J1.id = info_partida.jugador1 OR J1.id = info_partida.jugador2 OR J1.id = info_partida.jugador3 OR J1.id = info_partida.jugador4 "
+		"JOIN jugadores J2 ON J2.id = info_partida.jugador1 OR J2.id = info_partida.jugador2 OR J2.id = info_partida.jugador3 OR J2.id = info_partida.jugador4 "
+		"WHERE J1.nombre_usuario = '%s' AND J2.nombre_usuario = '%s' "
+		"ORDER BY partidas.id DESC "
+		"LIMIT 5", J1, J2);
+
+	err = mysql_query(conn, consulta);
+	if (err != 0) {
+		printf("Error al consultar datos de la base %u %s\n", mysql_errno(conn), mysql_error(conn));
+		strcpy(respuesta, "15/ERROR_DB");
+	} else {
+		resultado = mysql_store_result(conn);
+		row = mysql_fetch_row(resultado);
+
+		if (row == NULL) {
+			sprintf(respuesta, "15/NO_RESULTS");
+		} else {
+			sprintf(respuesta, "15");
+			while (row != NULL) {
+				sprintf(respuesta, "%s/%s/%s", respuesta, row[0], row[1]);
+				row = mysql_fetch_row(resultado);
+			}
+		}
+	}
+	printf("%s\n", respuesta);
+	write(sock_conn, respuesta, strlen(respuesta));
+}
 //----------------------------------------------------------------------------- PETICIONES CLIENTES
 void *AtenderCliente (void *socket)
 {
@@ -308,19 +867,11 @@ void *AtenderCliente (void *socket)
 	s = (int *) socket;
 	sock_conn = *s;
 	
-	char nombre [20];
-	char conectado[200];
-	char peticion[512];
-	char respuesta[800];
-	int ret;
-	
-	/*//inizializamos conexion con la base de datos
-	MYSQL *conn;
-	int err;
-	MYSQL_RES *resultado;// Estructura especial para almacenar resultados de consultas 
-	MYSQL_ROW row;
-	*/
-	
+	//char nombre [20];
+	char conectados[200];
+	char peticion[512], respuesta[800];
+	//int ret;
+
 	conn = mysql_init(NULL);//Creamos una conexion al servidor MYSQL 
 	if (conn==NULL) {
 		printf ("Error al crear la conexion: %u %s\n", mysql_errno(conn), mysql_error(conn));
@@ -340,10 +891,10 @@ void *AtenderCliente (void *socket)
 	while (terminar == 0)
 	{
 		// Ahora recibimos la peticion
-		ret=read(sock_conn,peticion, sizeof(peticion));
+		int ret=read(sock_conn,peticion, sizeof(peticion));
 		printf ("Recibido\n");
 		
-		// Tenemos que a�adirle la marca de fin de string 
+		// Tenemos que anadirle la marca de fin de string 
 		// para que no escriba lo que hay despues en el buffer
 		peticion[ret]='\0';
 		
@@ -353,951 +904,70 @@ void *AtenderCliente (void *socket)
 		char *p = strtok( peticion, "/");
 		int codigo =  atoi (p);
 		
-		//-----------------------------------------------------------------------------
-		if (codigo ==0) {	// CONUSLTA 0 : DESCONECTAR SERVIDOR
-			int conf = QuitarJugador(&sock_conn);
-			if (conf == 1) {
-				printf("Usuari eliminat de la llista\nUsuaris restants:\n");
-				for (int i = 0; i < miLista.num; i++) {
-					printf("Nombre: %s\nSocket: %d\n\n", miLista.conectados[i].nombre, miLista.conectados[i].socket);
-				}
-			}
-			char conectados [300];
-			
-			DameConectados (conectados);
-			
-			sprintf (respuesta, "3/%s", conectados);
-			printf("%s", respuesta);
-
-			for (int i = 0; i < numSocket; i++) {
-				write (sockets[i], respuesta, strlen(respuesta));
-			}
-			terminar = 1;
-		}
-		//-----------------------------------------------------------------------------
-		else if (codigo == 1) // CONSULTA 1 : LOGIN
-		{	
-			LogIn(p, respuesta);
-			
-			printf("%s\n", respuesta); // Escribir respuesta del cliente por consola "LOGIN_SUCCESSFUL"
-			write(sock_conn, respuesta, strlen(respuesta));
-
-			char conectados [300];
-			
-			DameConectados (conectados);
-			
-			sprintf (respuesta, "3/%s", conectados);
-			printf("%s", respuesta);
-
-			for (int i = 0; i < numSocket; i++) {
-				write (sockets[i], respuesta, strlen(respuesta));
-			}
-		}
-		//-----------------------------------------------------------------------------
-		else if (codigo== 2) // CONSULTA 2 : REGISTRO 
-		{
-			//pthread_mutex_lock(&mutex);
-			Registrarse(p, respuesta);
-			//pthread_mutex_unlock(&mutex);
-			printf("%s\n", respuesta);
-			write(sock_conn, respuesta, strlen(respuesta));
-		}
-		//-----------------------------------------------------------------------------
-		else if (codigo == 5) // CONSULTA 5 : DARSE DE BAJA
-		{
-			DarseBaja(p, respuesta);
-    
-			printf("Resposta: %s\n", respuesta);
-			write(sock_conn, respuesta, strlen(respuesta));
-
-			int conf = QuitarJugador(&sock_conn);
-			if (conf == 1) {
-				printf("Usuari eliminat de la llista\nUsuaris restants:\n");
-				for (int i = 0; i < miLista.num; i++) {
-					printf("Nombre: %s\nSocket: %d\n\n", miLista.conectados[i].nombre, miLista.conectados[i].socket);
-				}
-			}
-			char conectados [300];
-			DameConectados (conectados);
-			
-			sprintf (respuesta, "3/%s", conectados);
-			printf("%s", respuesta);
-
-			for (int i = 0; i < numSocket; i++) {
-				write (sockets[i], respuesta, strlen(respuesta));
-			}
-			terminar = 1;
-		}
-		//-----------------------------------------------------------------------------
-		else if (codigo == 6) // CONSULTA 6 : INVITACION
-		{
-			char nombre1[20];	//Persones que són convidades
-			char nombre2[20];
-			char nombre3[20];
-			char nombre4[20];	//Persona que convida
-			int turnos[3];
-			int numJugador;
-			int found = 0;
-
-			p = strtok(NULL, "/");
-			printf("numJugadors: %s\n", p);
-			numJugador = atoi(p);
-			p = strtok(NULL, "/");
-			strcpy(nombre1, p);
-
-			switch (numJugador) {
-				case 1:
-					p = strtok(NULL, "/");
-					strcpy(nombre4, p);
-
-					p = strtok(NULL, "/");
-					turnos[0] = atoi(p);
-
-					for (int i = 0; i < miLista.num && found == 0; i++) {
-						if (strcmp(nombre1, miLista.conectados[i].nombre) == 0) {
-							sprintf(respuesta, "6/%s/%d", nombre4, turnos[0]);
-							write(miLista.conectados[i].socket, respuesta, strlen(respuesta));
-						}
-					}
+switch (codigo) {
+			case 0:// ELIMINAR JUGADOR DE LA LISTA
+				ProcesoQuitarJugador(sock_conn, p); 8
 				break;
 
-				case 2:
-					p = strtok(NULL, "/");
-					strcpy(nombre2, p);
-					p = strtok(NULL, "/");
-					strcpy(nombre4, p);
-
-					p = strtok(NULL, "/");
-					turnos[0] = atoi(p);
-					p = strtok(NULL, "/");
-					turnos[1] = atoi(p);
-
-					for (int i = 0; i < miLista.num && found == 0; i++) {
-						if (strcmp(nombre1, miLista.conectados[i].nombre) == 0) {
-							sprintf(respuesta, "6/%s/%d", nombre4, turnos[0]);
-							write(miLista.conectados[i].socket, respuesta, strlen(respuesta));
-						}
-					}
-
-					for (int i = 0; i < miLista.num && found == 0; i++) {
-						if (strcmp(nombre2, miLista.conectados[i].nombre) == 0) {
-							sprintf(respuesta, "6/%s/%d", nombre4, turnos[1]);
-							write(miLista.conectados[i].socket, respuesta, strlen(respuesta));
-						}
-					}
+			case 1: // LOGIN
+				ProcesoLogIn(sock_conn, p);
 				break;
 
-				case 3:
-					p = strtok(NULL, "/");
-					strcpy(nombre2, p);
-					p = strtok(NULL, "/");
-					strcpy(nombre3, p);
-					p = strtok(NULL, "/");
-					strcpy(nombre4, p);
-
-					p = strtok(NULL, "/");
-					turnos[0] = atoi(p);
-					p = strtok(NULL, "/");
-					turnos[1] = atoi(p);
-					p = strtok(NULL, "/");
-					turnos [2] = atoi(p);
-
-					for (int i = 0; i < miLista.num && found == 0; i++) {
-						if (strcmp(nombre1, miLista.conectados[i].nombre) == 0) {
-							sprintf(respuesta, "6/%s/%d", nombre4, turnos[0]);
-							write(miLista.conectados[i].socket, respuesta, strlen(respuesta));
-						}
-					}
-
-					for (int i = 0; i < miLista.num && found == 0; i++) {
-						if (strcmp(nombre2, miLista.conectados[i].nombre) == 0) {
-							sprintf(respuesta, "6/%s/%d", nombre4, turnos[1]);
-							write(miLista.conectados[i].socket, respuesta, strlen(respuesta));
-						}
-					}
-
-					for (int i = 0; i < miLista.num && found == 0; i++) {
-						if (strcmp(nombre3, miLista.conectados[i].nombre) == 0) {
-							sprintf(respuesta, "6/%s/%d", nombre4, turnos[2]);
-							write(miLista.conectados[i].socket, respuesta, strlen(respuesta));
-						}
-					}
-				break;
-			}
-			printf("%s\n", respuesta);
-		}
-		//-----------------------------------------------------------------------------
-		else if (codigo == 7) // CONSULTA 7 : CHAT
-		{
-			char nPartida[10];
-			p = strtok(NULL, "/");
-			strcpy(nPartida, p);
-
-			char nom[20];
-			p = strtok(NULL, "/");
-			strcpy(nom, p);
-
-			char message[512];
-			p = strtok(NULL, "/");
-			strcpy(message, p);
-
-			sprintf(respuesta, "%d/%s/%s/%s", codigo, nPartida, nom, message);
-			printf("%s\n", respuesta);
-			for (int i = 0; i < numSocket; i++) {
-				write(sockets[i], respuesta, strlen(respuesta));
-			}
-		}
-		//-----------------------------------------------------------------------------
-		else if (codigo == 8) // CONSULTA 8 : ACEPTAR/RECHAZAR INVITACION
-		{
-			char res[10];
-			char nom[20];
-			char convidat[20];
-
-			p = strtok(NULL, "/");
-			strcpy(res, p);
-			p = strtok(NULL, "/");
-			strcpy(nom, p);
-			p = strtok(NULL, "/");
-			strcpy(convidat, p);
-
-			int resp = DamePosicionNombre(nom);	//Busquem el socket de la persona que convida per dir-li si hem acceptat o no
-
-			if (strcmp(res, "OK") == 0) {
-				sprintf(respuesta, "8/OK/%s", convidat);
-			}
-			else {
-				sprintf(respuesta, "8/NO/%s", convidat);
-			}
-			printf("%s\n", respuesta);
-			write(miLista.conectados[resp].socket, respuesta, strlen(respuesta));
-		}
-		//-----------------------------------------------------------------------------
-		else if (codigo == 9) // CONSULTA 9 : EMPEZAR EL JUEGO
-		{
-			int nJugadores;
-			int found = 0;
-			char J1[20];
-			char J2[20];
-			char J3[20];
-			char J4[20];
-			int j = 0;
-
-			p = strtok(NULL, "/");
-			nJugadores = atoi(p);
-
-			sprintf(respuesta, "9/%d/%d", nJugadores, nPartidas);
-
-			for (int i = 0; i < nJugadores; i++) {
-				p = strtok(NULL, "/");
-				sprintf(respuesta, "%s/%s", respuesta, p);
-				j++;
-				switch (j) {
-					case 1:
-						strcpy(J1, p);
-					break;
-
-					case 2:
-						strcpy(J2, p);
-					break;
-
-					case 3:
-						strcpy(J3, p);
-					break;
-
-					case 4:
-						strcpy(J4, p);
-					break;
-				}
-			}
-			printf("%s\n", respuesta);
-
-			for (int i = 0; i < miLista.num; i++) {
-				if (strcmp(miLista.conectados[i].nombre, J1) == 0) {
-					write(miLista.conectados[i].socket, respuesta, strlen(respuesta));
-				}
-				else if (strcmp(miLista.conectados[i].nombre, J2) == 0) {
-					write(miLista.conectados[i].socket, respuesta, strlen(respuesta));
-					if (nJugadores == 2) {
-					}
-				}
-				else if (nJugadores > 2) {
-					if (strcmp(miLista.conectados[i].nombre, J3) == 0) {
-						write(miLista.conectados[i].socket, respuesta, strlen(respuesta));
-					}
-					else if (nJugadores > 3) {
-						if (strcmp(miLista.conectados[i].nombre, J4) == 0) {
-							write(miLista.conectados[i].socket, respuesta, strlen(respuesta));
-						}
-					}
-				}
-			}
-			nPartidas++;
-		}
-		//-----------------------------------------------------------------------------
-		else if (codigo == 10) // CONSULTA 10 : DEVUELVE JUGADORES QUE JUGARON EL DIA INTRODUCIDO POR TECLADO
-		{
-			char fecha[30];
-			p = strtok(NULL, "/"); 
-			strcpy(fecha,p);
-			char consulta[512];
-			char nombres[50];
-			
-			sprintf(consulta, "SELECT jugadores.nombre_usuario FROM jugadores,partidas,info_partida WHERE partidas.fecha = '%s' AND partidas.id=info_partida.partida AND (info_partida.jugador1 = jugadores.id OR info_partida.jugador2 = jugadores.id OR info_partida.jugador3 = jugadores.id OR info_partida.jugador4 = jugadores.id)",fecha);
-			
-			err=mysql_query (conn, consulta);
-			if (err!=0) {
-				printf ("Error al consultar datos de la base %u %s\n",
-						mysql_errno(conn), mysql_error(conn));
-				exit (1);
-			}
-			
-			printf("consulta: %s\n",consulta);
-			
-			resultado = mysql_store_result(conn);
-			row = mysql_fetch_row(resultado);
-			
-			if (row == NULL)
-				sprintf(respuesta, "10/ERROR_DB");
-			
-			else 
-			{
-				strcpy(respuesta, "10/");
-				while (row!=NULL) 
-				{
-					strcpy(nombres, row[0]);
-					row = mysql_fetch_row(resultado);
-					sprintf(respuesta, "%s%s/", respuesta, nombres);
-				}
-			}	
-			printf("Consulta de jugadores que jugaron el %s: %s\n", fecha, respuesta);
-			write(sock_conn, respuesta, strlen(respuesta));
-		}
-		//-----------------------------------------------------------------------------
-		else if (codigo ==11)// CONSULTA 11: DEVUELVE JUGADORES QUE GANARON EL DIA INTRODUCIDO POR TECLADO
-		{
-			char fecha[30];
-			p = strtok(NULL, "/"); 
-			strcpy(fecha,p);
-			char consulta[562];
-			char nombres[50];
-			
-			sprintf(consulta, "SELECT DISTINCT jugadores.nombre_usuario "
-					"FROM jugadores, partidas "
-					"WHERE partidas.fecha = '%s' AND partidas.ganador = jugadores.nombre_usuario", fecha); //jugadores.id
-			
-			err=mysql_query (conn, consulta);
-			if (err!=0) {	
-				printf ("Error al consultar datos de la base %u %s\n", mysql_errno(conn), mysql_error(conn));
-				strcpy(respuesta, "11/ERROR_DB");
-			}
-
-			resultado = mysql_store_result(conn);
-			row = mysql_fetch_row(resultado);
-			
-			if (row == NULL){
-				printf("Error al almacenar el resultado de la consulta: %u %s\n", mysql_errno(conn), mysql_error(conn));
-				strcpy(respuesta, "11/ERROR_DB");
-			}
-			else 
-			{
-				strcpy(respuesta, "11/");
-				while (row!=NULL) 
-				{
-					strcpy(nombres, row[0]);
-					row = mysql_fetch_row(resultado);
-					sprintf(respuesta, "%s%s/", respuesta, nombres);
-				}
-			}
-			printf("Consulta de jugadores que ganaron el %s: %s\n", fecha, respuesta);
-			write(sock_conn, respuesta, strlen(respuesta));	
-		}
-		//-----------------------------------------------------------------------------
-		else if (codigo ==12) // CONSULTA 12: DEVUELVE DURACION TOTAL DE PARTIDAS GANADAS DE UN JUGADOR-NOMBRE INTRODUCIDO POR TECLADO
-		{
-			char nombre_usuario[30];
-			p = strtok(NULL, "/"); 
-			strcpy(nombre_usuario, p);
-			
-			char consulta[512];
-			printf("El nombre del jugador seleccionado es: '%s'\n", nombre_usuario);
-			
-			sprintf(consulta, "SELECT SUM(partidas.duracion) FROM (partidas) WHERE partidas.ganador = '%s'",nombre_usuario);
-			
-			err= mysql_query (conn, consulta);
-			if (err!=0) {
-				printf ("Error al consultar datos de la base %u %s\n", mysql_errno(conn), mysql_error(conn));
-				strcpy(respuesta, "12/ERROR_DB");
-			}
-			
-			resultado = mysql_store_result(conn);
-			row = mysql_fetch_row(resultado);
-			
-			if (row[0]==NULL)
-				sprintf(respuesta, "12/ERROR_DB");
-			
-			else
-				sprintf(respuesta, "12/%s", row[0]);
-			
-			printf("%s\n", respuesta);
-			write(sock_conn, respuesta, strlen(respuesta));
-		}
-		//-----------------------------------------------------------------------------
-		else if (codigo ==13) //CONSULTA 13 : DEVUELVE LISTA DE JUGADORES DE PARTIDAS JUGADAS CON UN JUGADOR-NOMBRE INTRODUCIDO POR TECLADO 
-		{	
-			char consulta[512];
-			char nombre_usuario[20];
-			int found = 0;
-
-			p = strtok(NULL, "/");
-			strcpy(nombre_usuario, p);
-
-			printf("1\n");
-			
-			sprintf(consulta, 
-				"SELECT DISTINCT jugadores.nombre_usuario "
-				"FROM jugadores "
-				"JOIN info_partida ON jugadores.id IN (info_partida.jugador1, info_partida.jugador2, info_partida.jugador3, info_partida.jugador4) "
-				"WHERE info_partida.partida IN ("
-				"    SELECT partida "
-				"    FROM info_partida "
-				"    JOIN jugadores ON jugadores.id IN (info_partida.jugador1, info_partida.jugador2, info_partida.jugador3, info_partida.jugador4) "
-				"    WHERE jugadores.nombre_usuario = '%s'"
-				") AND jugadores.nombre_usuario != '%s'", 
-				nombre_usuario, nombre_usuario);
-			printf("2\n");
-
-			err= mysql_query (conn, consulta);
-			if (err!=0) {
-				printf ("Error al consultar datos de la base %u %s\n", mysql_errno(conn), mysql_error(conn));
-				strcpy(respuesta, "13/ERROR_DB");
-			}
-			printf("3\n");
-			
-			resultado = mysql_store_result(conn);
-			row = mysql_fetch_row(resultado);
-
-			printf("4\n");
-			
-			if (row==NULL) {
-				sprintf(respuesta, "13/ERROR_DB");
-			}
-			
-			else {
-				printf("5\n");
-				sprintf(respuesta, "13/");
-
-				while (row != NULL) {
-					if (strcmp(nombre_usuario, row[0]) != 0) {
-						sprintf(respuesta, "%s%s/", respuesta, row[0]);
-						found = 1;
-					}
-					row = mysql_fetch_row(resultado);
-				}
-				printf("6\n");
-			}
-			printf("%s\n", respuesta);
-			write(sock_conn, respuesta, strlen(respuesta));
-		}
-		//-----------------------------------------------------------------------------
-		else if (codigo == 14) // CONSULTA 14 : LISTA DE PARTIDAS JUGADAS EN UN PERIODIO INTRODUCIDO POR TECLADO 
-		{
-			char fecha[50];
-			char fecha1[50];
-			char fecha2[50];
-			char consulta[512];
-			int d1, d2, m1, m2, a1, a2;
-
-			printf("1\n");
-
-			p = strtok(NULL, "/"); 
-			if (p == NULL) {
-				printf("Error: fecha1 no encontrada\n");
-				return;
-			}
-			strcpy(fecha1, p);
-
-			p = strtok(NULL, "/"); 
-			if (p == NULL) {
-				printf("Error: fecha2 no encontrada\n");
-				return;
-			}
-			strcpy(fecha2, p);
-
-			printf("2\n");
-
-			// Trozos fecha1
-			char *q = strtok(fecha1, "-");
-			if (q == NULL) {
-				printf("Error: No se pudo dividir fecha1\n");
-				return;
-			}
-			d1 = atoi(q);
-
-			printf("3\n");
-
-			q = strtok(NULL, "-");
-			if (q == NULL) {
-				printf("Error: No se pudo dividir fecha1\n");
-				return;
-			}
-			m1 = atoi(q);
-
-			q = strtok(NULL, "-");
-			if (q == NULL) {
-				printf("Error: No se pudo dividir fecha1\n");
-				return;
-			}
-			a1 = atoi(q);
-
-			printf("4\n");
-
-			// Trozos fecha2
-			char *r = strtok(fecha2, "-");
-			if (r == NULL) {
-				printf("Error: No se pudo dividir fecha2\n");
-				return;
-			}
-			d2 = atoi(r);
-
-			r = strtok(NULL, "-");
-			if (r == NULL) {
-				printf("Error: No se pudo dividir fecha2\n");
-				return;
-			}
-			m2 = atoi(r);
-
-			r = strtok(NULL, "-");
-			if (r == NULL) {
-				printf("Error: No se pudo dividir fecha2\n");
-				return;
-			}
-			a2 = atoi(r);
-
-			printf("5\n");
-
-			sprintf(respuesta, "14/");
-
-			if (a1 <= a2) {
-				printf("6\n");
-				while (!(d1 == d2 && m1 == m2 && a1 == a2)) {
-					sprintf(fecha, "%d-%d-%d", d1, m1, a1);
-					printf("Fecha: %s\n", fecha);
-
-					sprintf(consulta, 
-							"SELECT DISTINCT jugadores.nombre_usuario "
-							"FROM jugadores "
-							"JOIN info_partida ON jugadores.id IN (info_partida.jugador1, info_partida.jugador2, info_partida.jugador3, info_partida.jugador4) "
-							"WHERE info_partida.partida IN ("
-							"    SELECT partidas.id "
-							"    FROM partidas "
-							"    WHERE partidas.fecha = '%s'"
-							")", 
-							fecha);
-
-					printf("Consulta: %s\n", consulta);
-
-					err = mysql_query(conn, consulta);
-					if (err != 0) {
-						printf("Error al consultar datos de la base %u %s\n", mysql_errno(conn), mysql_error(conn));
-						strcpy(respuesta, "14/ERROR_DB");
-						break;
-					}
-    
-					resultado = mysql_store_result(conn);
-					if (!resultado) {
-						printf("Error al obtener resultados %u %s\n", mysql_errno(conn), mysql_error(conn));
-						strcpy(respuesta, "14/ERROR_DB");
-						break;
-					}
-
-					// Procesar resultados
-					row = mysql_fetch_row(resultado);
-					while (row != NULL) {
-						strcat(respuesta, row[0]);
-						strcat(respuesta, "/");
-						row = mysql_fetch_row(resultado);
-					}
-					mysql_free_result(resultado);
-
-					printf("7\n");
-
-					d1++;
-					if ((m1 == 2 && ((a1 % 4 == 0 && a1 % 100 != 0) || (a1 % 400 == 0) ? d1 > 29 : d1 > 28)) || // Febrero
-						(m1 == 4 || m1 == 6 || m1 == 9 || m1 == 11 ? d1 > 30 : d1 > 31)) { // Meses con 30 días
-						d1 = 1;
-						m1++;
-					}
-					if (m1 > 12) { // Avanza el año
-						m1 = 1;
-						a1++;
-					}
-					printf("8\n");
-				}
-				printf("%s\n", respuesta);
-				write(sock_conn, respuesta, strlen(respuesta));
-			}
-		}
-		//-----------------------------------------------------------------------------
-		else if (codigo == 15) // CONSULTA 15 : DEVUELVE EL RESULTADO DE PARTIDAS JUGADAS CON UN JUGADOR-NOMBRE INTRODUCIDO POR TECLADO 
-		{
-			char consulta[512];
-			char J1[20];
-			char J2[20];
-
-			p = strtok(NULL, "/");
-			strcpy(J1, p);
-			p = strtok(NULL, "/");
-			strcpy(J2, p);
-
-			sprintf(consulta,
-				"SELECT partidas.id, partidas.ganador "
-				"FROM partidas "
-				"JOIN info_partida ON partidas.id = info_partida.partida "
-				"JOIN jugadores J1 ON J1.id = info_partida.jugador1 OR J1.id = info_partida.jugador2 OR J1.id = info_partida.jugador3 OR J1.id = info_partida.jugador4 "
-				"JOIN jugadores J2 ON J2.id = info_partida.jugador1 OR J2.id = info_partida.jugador2 OR J2.id = info_partida.jugador3 OR J2.id = info_partida.jugador4 "
-				"WHERE J1.nombre_usuario = '%s' AND J2.nombre_usuario = '%s' "
-				"ORDER BY partidas.id DESC "
-				"LIMIT 5", J1, J2);
-
-			err = mysql_query(conn, consulta);
-			if (err != 0) {
-				printf("Error al consultar datos de la base %u %s\n", mysql_errno(conn), mysql_error(conn));
-				strcpy(respuesta, "15/ERROR_DB");
-			} else {
-				resultado = mysql_store_result(conn);
-				row = mysql_fetch_row(resultado);
-
-				if (row == NULL) {
-					sprintf(respuesta, "15/NO_RESULTS");
-				} else {
-					sprintf(respuesta, "15");
-					while (row != NULL) {
-						sprintf(respuesta, "%s/%s/%s", respuesta, row[0], row[1]);
-						row = mysql_fetch_row(resultado);
-					}
-				}
-			}
-			printf("%s\n", respuesta);
-			write(sock_conn, respuesta, strlen(respuesta));
-		}
-		//-----------------------------------------------------------------------------
-		else if (codigo == 20) // CONSULTA 20 : MOVER FICHAS
-		{
-			int nPartida;
-			int D1;
-			int D2;
-			char J1[20];
-			char J2[20];
-			char J3[20];
-			char J4[20];
-
-			p = strtok(NULL, "/");
-			nPartida = atoi(p);
-			p = strtok(NULL, "/");
-			D1 = atoi(p);
-			p = strtok(NULL, "/");
-			D2 = atoi(p);
-			p = strtok(NULL, "/");
-			strcpy(J1, p);
-			p = strtok(NULL, "/");
-			strcpy(J2, p);
-			p = strtok(NULL, "/");
-			strcpy(J3, p);
-			p = strtok(NULL, "/");
-			strcpy(J4, p);
-
-			sprintf(respuesta, "20/%d/%d/%d/%s/%s/%s/%s", nPartida, D1, D2, J1, J2, J3, J4);
-			printf("%s\n", respuesta);
-
-			int found = 0;
-
-			if (strcmp("NO", J1) != 0) {
-				for (int i = 0; i < miLista.num && found == 0; i++) {
-					if (strcmp(miLista.conectados[i].nombre, J1) == 0) {
-						write(miLista.conectados[i].socket, respuesta, strlen(respuesta));
-						found = 1;
-					}
-				}
-			}
-			
-			if (strcmp("NO", J2) != 0) {
-				found = 0;
-				for (int i = 0; i < miLista.num && found == 0; i++) {
-					if (strcmp(miLista.conectados[i].nombre, J2) == 0) {
-						write(miLista.conectados[i].socket, respuesta, strlen(respuesta));
-						found = 1;
-					}
-				}
-			}
-
-			if (strcmp("NO", J3) != 0) {
-				found = 0;
-				for (int i = 0; i < miLista.num && found == 0; i++) {
-					if (strcmp(miLista.conectados[i].nombre, J3) == 0) {
-						write(miLista.conectados[i].socket, respuesta, strlen(respuesta));
-						found = 1;
-					}
-				}
-			}
-
-			if (strcmp("NO", J4) != 0) {
-				found = 0;
-				for (int i = 0; i < miLista.num && found == 0; i++) {
-					if (strcmp(miLista.conectados[i].nombre, J4) == 0) {
-						write(miLista.conectados[i].socket, respuesta, strlen(respuesta));
-						found = 1;
-					}
-				}
-			}
-		}
-		//-----------------------------------------------------------------------------
-		else if (codigo == 21) // CONSULTA 21 : ABANDONAR PARTIDA
-		{
-			int nPartida;
-			char J1[20];
-			char J2[20];
-			char J3[20];
-			char J4[20];
-
-			p = strtok(NULL, "/");
-			nPartida = atoi(p);
-			p = strtok(NULL, "/");
-			strcpy(J1, p);
-			p = strtok(NULL, "/");
-			strcpy(J2, p);
-			p = strtok(NULL, "/");
-			strcpy(J3, p);
-			p = strtok(NULL, "/");
-			strcpy(J4, p);
-			
-			sprintf(respuesta, "21/%d/%s/%s/%s/%s", nPartida, J1, J2, J3, J4);
-			printf("%s\n", respuesta);
-
-			int found = 0;
-
-			if (strcmp("NO", J1) != 0) {
-				for (int i = 0; i < miLista.num && found == 0; i++) {
-					if (strcmp(miLista.conectados[i].nombre, J1) == 0) {
-						write(miLista.conectados[i].socket, respuesta, strlen(respuesta));
-						found = 1;
-					}
-				}
-			}
-			
-			if (strcmp("NO", J2) != 0) {
-				found = 0;
-				for (int i = 0; i < miLista.num && found == 0; i++) {
-					if (strcmp(miLista.conectados[i].nombre, J2) == 0) {
-						write(miLista.conectados[i].socket, respuesta, strlen(respuesta));
-						found = 1;
-					}
-				}
-			}
-
-			if (strcmp("NO", J3) != 0) {
-				found = 0;
-				for (int i = 0; i < miLista.num && found == 0; i++) {
-					if (strcmp(miLista.conectados[i].nombre, J3) == 0) {
-						write(miLista.conectados[i].socket, respuesta, strlen(respuesta));
-						found = 1;
-					}
-				}
-			}
-
-			if (strcmp("NO", J4) != 0) {
-				found = 0;
-				for (int i = 0; i < miLista.num && found == 0; i++) {
-					if (strcmp(miLista.conectados[i].nombre, J4) == 0) {
-						write(miLista.conectados[i].socket, respuesta, strlen(respuesta));
-						found = 1;
-					}
-				}
-			}
-		}
-		//-----------------------------------------------------------------------------
-		else if (codigo == 22) // CONSULTA 22 : ACTUALIZAR BBDD DE PARTIDA
-		{
-			int id;
-			char fecha[25];
-			char hora[20];
-			float duration;
-			char guanyador[20];
-			char J1[20];
-			char J2[20];
-			char J3[20];
-			char J4[20];
-			int P1;
-			int P2;
-			int P3;
-			int P4;
-			int nJugadors;
-			char consulta[512];
-			char consulta2[512];
-			char consulta_playerID[512];
-			int error = 0;
-
-			p = strtok(NULL, "/");
-			strcpy(fecha, p);
-			p = strtok(NULL, "/");
-			strcpy(hora, p);
-			p = strtok(NULL, "/");
-			duration = atof(p);
-			p = strtok(NULL, "/");
-			strcpy(guanyador, p);
-			p = strtok(NULL, "/");
-			strcpy(J1, p);
-			p = strtok(NULL, "/");
-			strcpy(J2, p);
-			p = strtok(NULL, "/");
-			strcpy(J3, p);
-			p = strtok(NULL, "/");
-			strcpy(J4, p);
-
-			if (strcmp(J4, "NO") == 0) {
-				if (strcmp(J3, "NO") == 0) {
-					nJugadors = 2;
-				}
-				else {
-					nJugadors = 3;
-				}
-			}
-			else {
-				nJugadors = 4;
-			}
-			sprintf(consulta_playerID, "SELECT jugadores.id FROM jugadores WHERE jugadores.nombre_usuario = '%s'", J1);
-
-			err = mysql_query(conn, consulta_playerID);
-			if (err!=0) {
-				printf("Error 1 al consultar datos de la base %u %s\n", mysql_errno(conn), mysql_error(conn));
-			}		
-			resultado = mysql_store_result (conn);
-			row = mysql_fetch_row (resultado);
-			
-			if (row[0]==NULL) {
-				printf("No hi ha hagut resposta\n");
-				error = 1;
-			} else {
-				P1 = atoi(row[0]);
-			}
-			sprintf(consulta_playerID, "SELECT jugadores.id FROM jugadores WHERE nombre_usuario = '%s'", J2);
-
-			err = mysql_query(conn, consulta_playerID);
-			if (err!=0) {
-				printf("Error 2 al consultar datos de la base %u %s\n", mysql_errno(conn), mysql_error(conn));
-			}		
-			resultado = mysql_store_result (conn);
-			row = mysql_fetch_row (resultado);
-			
-			if (row[0]==NULL) {
-				printf("No hi ha hagut resposta 3\n");
-				error = 1;
-			} else {
-				P2 = atoi(row[0]);
-			}
-
-			switch (nJugadors) {
-				case 4:
-					sprintf(consulta_playerID, "SELECT jugadores.id FROM jugadores WHERE nombre_usuario = '%s'", J3);
-
-					err = mysql_query(conn, consulta_playerID);
-					if (err!=0) {
-						printf("Error 4 al consultar datos de la base %u %s\n", mysql_errno(conn), mysql_error(conn));
-					}
-					resultado = mysql_store_result (conn);
-					row = mysql_fetch_row (resultado);
-			
-					if (row[0]==NULL) {
-						printf("No hi ha hagut resposta 5\n");
-						error = 1;
-					} else {
-						P3 = atoi(row[0]);
-					}
-					sprintf(consulta_playerID, "SELECT jugadores.id FROM jugadores WHERE nombre_usuario = '%s'", J4);
-
-					err = mysql_query(conn, consulta_playerID);
-					if (err!=0) {
-						printf("Error 6 al consultar datos de la base %u %s\n", mysql_errno(conn), mysql_error(conn));
-					}
-					resultado = mysql_store_result (conn);
-					row = mysql_fetch_row (resultado);
-			
-					if (row[0]==NULL) {
-						printf("No hi ha hagut resposta 7\n");
-						error = 1;
-					} else {
-						P4 = atoi(row[0]);
-					}
-					sprintf(consulta2, "INSERT INTO info_partida(jugador1, jugador2, jugador3, jugador4, partida) VALUES(%d, %d, %d, %d, ", P1, P2, P3, P4);
+			case 2: // REGISTRO 
+				ProcesoRegistro(sock_conn, p);
 				break;
 
-				case 3:
-					sprintf(consulta_playerID, "SELECT jugadores.id FROM jugadores WHERE nombre_usuario = '%s'", J3);
-
-					err = mysql_query(conn, consulta_playerID);
-					if (err!=0) {
-						printf("Error 8 al consultar datos de la base %u %s\n", mysql_errno(conn), mysql_error(conn));
-					}
-					resultado = mysql_store_result (conn);
-					row = mysql_fetch_row (resultado);
-			
-					if (row[0]==NULL) {
-						printf("No hi ha hagut resposta 9\n");
-						error = 1;
-					} else {
-						P3 = atoi(row[0]);
-					}
-					sprintf(consulta2, "INSERT INTO info_partida(jugador1, jugador2, jugador3, partida) VALUES(%d, %d, %d, ", P1, P2, P3);
+			case 5: // DARSE DE BAJA
+				ProcesoDarseBaja(sock_conn,p);
+				break;
+				
+			case 7: // CHAT
+				ProcesoChat(sock_conn, p);
 				break;
 
-				case 2:
-					sprintf(consulta2, "INSERT INTO info_partida(jugador1, jugador2, partida) VALUES(%d, %d, ", P1, P2);
+			case 6: // INVITACION
+				ProcesoInvitar(sock_conn,p);
 				break;
-			}
-			sprintf(consulta, "SELECT MAX(partidas.id) FROM (partidas)");
 
-			if (error == 0) {
-				pthread_mutex_lock( &mutex );
-				err = mysql_query(conn, consulta);
-				if (err!=0) {
-					printf("Error 10 al consultar datos de la base %u %s\n", mysql_errno(conn), mysql_error(conn));
-				}
-				resultado = mysql_store_result (conn);
-				row = mysql_fetch_row (resultado);
+			case 8: // ACEPTAR/RECHAZAR INVITACION
+				ProcesoAceptarRechazar(sock_conn, p);
+				break;
+
+			case 9: // EMPEZAR EL JUEGO
+				ProcesoEmpezarJugar(sock_conn, p);
+				break;
 			
-				if (row[0]==NULL) {
-					printf("No hi ha hagut resposta 11\n");
-					id = 0;
-				} else {
-					id = atoi(row[0]) + 1;
-				}
-				sprintf(consulta, "INSERT INTO partidas(id, fecha, hora, duracion, ganador) VALUES(%d, '%s', '%s', %f, '%s')", id, fecha, hora, duration, guanyador);
-				sprintf(consulta2, "%s%d)", consulta2, id);
+			case 20: // MOVER FICHAS
+				ProcesoMoverFichar(sock_conn, p);
+				break;
 
-				err = mysql_query(conn, consulta);
-				if (err != 0)
-					printf("Error 12 al consultar datos de la base %u %s\n", mysql_errno(conn), mysql_error(conn));
-				else
-					printf("Success!\n");
+			case 21: // ABANDONAR PARTIDA
+				ProcesoAbandonarPartida(sock_conn,p);
+				break;
 
-				err = mysql_query(conn, consulta2);
-				if (err != 0)
-					printf("Error 13 al consultar datos de la base %u %s\n", mysql_errno(conn), mysql_error(conn));
-				else
-					printf("Success!\n");
+			case 22: //ACTUALIZAR BBDD DE PARTIDA
+				ProcesoActualizarBBDD(sock_conn, p);
+				break;
+			
+			case 12: //CONSULTA : DEVUELVE DURACION TOTAL DE PARTIDAS GANADAS DE UN JUGADOR-NOMBRE INTRODUCIDO POR TECLADO
+				 DuracionPartidasJugador(sock_conn, p);
+				break;
 
-				pthread_mutex_unlock( &mutex );
-			}
-			else
-				printf("Error en trobar les id d'algun(s) jugador(s)'");
+			case 13: //CONSULTA : DEVUELVE LISTA DE JUGADORES DE PARTIDAS JUGADAS POR EL USUARIO QUE CONSULTA (uno mismo)
+				ResultadoContrincantes(sock_conn, p);
+				break;
+
+			case 14: //CONSULTA 14 : LISTA DE PARTIDAS JUGADAS EN UN PERIODIO INTRODUCIDO POR TECLADO 
+				ListaPartidasPeriodo(sock_conn, p);
+				break;
+
+			case 15: //CONSULTA 15 : DEVUELVE EL RESULTADO DE PARTIDAS JUGADAS CONTRA UN JUGADOR-NOMBRE INTRODUCIDO POR TECLADO 
+				ResultadoPartidas(sock_conn, p);
+				break;
+
+			default:
+			break;
 		}
-		//-----------------------------------------------------------------------------
-		else if ((codigo ==1) || (codigo==2) || (codigo==3) || (codigo==4) || (codigo==10) || (codigo==11)|| (codigo==12))
-		{
-			pthread_mutex_lock( &mutex );
-			contador=contador+1;
-			pthread_mutex_unlock( &mutex );
-		}	
 	}
 	close(sock_conn);	// Se acabo el servicio para este cliente
 }

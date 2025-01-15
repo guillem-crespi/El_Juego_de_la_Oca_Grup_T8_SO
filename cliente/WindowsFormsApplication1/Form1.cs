@@ -87,7 +87,7 @@ namespace WindowsFormsApplication1
             Close();
         }
         //-----------------------------------------------------------------------------
-        //----------------------------------------------------------------------------- BOTON DARSE DE BAJA (CONSULTA 5)
+        //----------------------------------------------------------------------------- BOTON DARSE DE BAJA 
         private void button_Baja_Click(object sender, EventArgs e)
         {
             string mensaje = "5/" + nickname + "/" + password;
@@ -99,33 +99,7 @@ namespace WindowsFormsApplication1
         //----------------------------------------------------------------------------- BOTON ENVIAR CONSULTA
         private void button2_Click(object sender, EventArgs e)
         {
-            if (DimeJugadores.Checked) // CONSULTA 10 : JUGADORES QUE JUGARON (EL DIA INTRODUCIDO POR TECLADO)
-            {
-                string fecha = ConsultaFecha.Text;
-                if (!EsFechaValida(fecha))
-                {
-                    Resposta_Lbl.Invoke(new Action(() => Resposta_Lbl.Text = "Formato de fecha no válido. Use el formato dd-MM-yyyy."));
-                    return;
-                }
-
-                string mensaje = "10/" + fecha;
-                byte[] msg = Encoding.ASCII.GetBytes(mensaje);
-                server.Send(msg);
-            }
-            if (DimeGanadores.Checked)  // CONSULTA 11 : JUGADORES QUE GANARON (EL DIA INTRODUCIDO POR TECLADO)
-            {
-                string fecha = ConsultaFecha.Text;
-                if (!EsFechaValida(fecha))
-                {
-                    Resposta_Lbl.Invoke(new Action(() => Resposta_Lbl.Text = "Formato de fecha no válido. Use el formato dd-MM-yyyy."));
-                    return;
-                }
-
-                string mensaje = "11/" + fecha;
-                byte[] msg = Encoding.ASCII.GetBytes(mensaje);
-                server.Send(msg);
-            }
-            if (SumaDuracion.Checked) // CONSULTA 12 : DURACION TOTAL DE PARTIDAS GANADAS (DE UN JUGADOR-NOMBRE INTRODUCIDO POR TECLADO)
+            if (SumaDuracion.Checked) // CONSULTA 12 : DEVUELVE DURACION TOTAL DE PARTIDAS GANADAS DE UN JUGADOR-NOMBRE INTRODUCIDO POR TECLADO
             {
                 string nombre = ConsultaNombre.Text;
                 if (string.IsNullOrWhiteSpace(nombre))
@@ -138,20 +112,14 @@ namespace WindowsFormsApplication1
                 byte[] msg = Encoding.ASCII.GetBytes(mensaje);
                 server.Send(msg);
             }
-            if (ListadoJugadores.Checked) // CONSULTA 13 : LISTA DE JUGADORES DE PARTIDAS JUGADAS POR EL JUGADOR (Requisito minimo) 
+            if (ListadoJugadores.Checked) // CONSULTA 13 : DEVUELVE LISTA DE JUGADORES DE PARTIDAS JUGADAS POR EL USUARIO QUE CONSULTA (uno mismo)
             {
                 string nombre = nickname;
-                if (string.IsNullOrWhiteSpace(nombre))
-                {
-                    Resposta_Lbl.Invoke(new Action(() => Resposta_Lbl.Text = "El nombre no puede estar vacío."));
-                    return;
-                }
-
                 string mensaje = "13/" + nombre;
                 byte[] msg = Encoding.ASCII.GetBytes(mensaje);
                 server.Send(msg);
             }
-            if (PartidasDia.Checked) // CONSULTA 14 : LISTA DE PARTIDAS JUGADAS (EN UN PERIODO INTRODUCIDO POR TECLADO) (Requisito minimo) 
+            if (PartidasDia.Checked) // CONSULTA 14 : LISTA DE PARTIDAS JUGADAS EN UN PERIODIO INTRODUCIDO POR TECLADO 
             {
                 string fecha1 = ConsultaFecha.Text;
                 string fecha2 = ConsultaPeriodo.Text;
@@ -173,7 +141,7 @@ namespace WindowsFormsApplication1
                 byte[] msg = Encoding.ASCII.GetBytes(mensaje);
                 server.Send(msg);
             }
-            if (ResultadoParitdas.Checked) // CONSULTA 15 : RESULTADO DE PARTIDAS JUGADAS CON UN (JUGADOR-NOMBRE INTRODUCIDO POR TECLADO) (Requisito minimo)
+            if (ResultadoParitdas.Checked) // CONSULTA 15 : DEVUELVE EL RESULTADO DE PARTIDAS JUGADAS CONTRA UN JUGADOR-NOMBRE INTRODUCIDO POR TECLADO 
             {
                 string nombre = ConsultaNombre.Text;
                 if (string.IsNullOrWhiteSpace(nombre))
@@ -409,7 +377,7 @@ namespace WindowsFormsApplication1
                             }
                             ListaConectados.ClearSelection();
                         }));
-                    break;
+                        break;
 
                     case 5: // RESPUESTA CONSULTA 0 : ELIMINA USUARIO DADO DE BAJA
                         mensaje = trozos[1];
@@ -433,7 +401,28 @@ namespace WindowsFormsApplication1
                             server.Close();
                             Close();
                         }
-                    break;
+                        break;
+
+                    case 7: // ACTUALIZA MENSAJES EN EL CHAT
+                        int numPartida = Convert.ToInt16(trozos[1]);
+                        int numForm = -1;
+                        bool found = false;
+
+                        for (int i = 0; i < Forms.Count && !found; i++)
+                        {
+                            if (numPartida == Forms[i].GetPartidaNum())
+                            {
+                                numForm = Forms[i].GetFormNum();
+                                found = true;
+                            }
+                        }
+
+                        if (numForm != -1)
+                        {
+                            Form2 f2 = Forms[numForm];
+                            f2.ActualizarChat(trozos[2], trozos[3]);
+                        }
+                        break;
 
                     case 6: // GESTION DE INVITACIONES
                         DialogResult result = MessageBox.Show(
@@ -455,30 +444,9 @@ namespace WindowsFormsApplication1
                             byte[] msg = Encoding.ASCII.GetBytes(mensaje);
                             server.Send(msg);
                         }
-                    break;
+                        break;
 
-                    case 7: // ACTUALIZA MENSAJES EN EL CHAT
-                        int numPartida = Convert.ToInt16(trozos[1]);
-                        int numForm = -1;
-                        bool found = false;
-
-                        for (int i = 0; i < Forms.Count && !found; i++)
-                        {
-                            if (numPartida == Forms[i].GetPartidaNum())
-                            {
-                                numForm = Forms[i].GetFormNum();
-                                found = true;
-                            }
-                        }
-
-                        if (numForm != -1)
-                        {
-                            Form2 f2 = Forms[numForm];
-                            f2.ActualizarChat(trozos[2], trozos[3]);
-                        }
-                    break;
-
-                    case 8: // ACTUALIZA ESTADO DE INVITACIONES
+                    case 8: // ACTUALIZA INVITACIÓN Y EMPIEZA PARTIDA EN CASO DE ACEPTARLA
                         int nInvitados = Convert.ToInt32(invitados[4]);
                         string players = "";
 
@@ -550,7 +518,7 @@ namespace WindowsFormsApplication1
                                 invitados[4] = Convert.ToString(nInvitados + 1);
                             }
                         }
-                    break;
+                        break;
 
                     case 9: // INICAR PARTIDA DE LOS JUGADORES CONFIRMADOS 
                         int nJugadors = Convert.ToInt32(trozos[1]);
@@ -598,30 +566,59 @@ namespace WindowsFormsApplication1
                             nJugador = 4;
                         }
                         // Inicia la partida en un nuevo hilo
-                        ThreadStart ts = delegate { EmpezarJuego(Jugador1, Jugador2, Jugador3, Jugador4, nPartida); };
+                        ThreadStart ts = delegate { EmpezarJuego(Jugador1, Jugador2, Jugador3, Jugador4, Convert.ToInt32(trozos[2])); };
                         Thread J = new Thread(ts);
                         J.Start();
-                    break;
+                        break;
+                    
+                    case 20: // GESTION DADOS DE LA PARTIDA
+                        numPartida = Convert.ToInt16(trozos[1]);
+                        int D1 = Convert.ToInt16(trozos[2]);
+                        int D2 = Convert.ToInt16(trozos[3]);
+                        numForm = -1;
+                        found = false;
 
-                    case 10:  // RESPUESTA CONSULTA 10 : JUGADORES QUE JUGARON EL DIA INTRODUCIDO POR TECLADO
-                        mensaje = trozos[1];
-                        delegado = new DelegadoParaEscribir(Update_Respuesta_Lbl);
+                        for (int i = 0; i < Forms.Count && !found; i++)
+                        {
+                            if (numPartida == Forms[i].GetPartidaNum())
+                            {
+                                numForm = Forms[i].GetFormNum();
+                                found = true;
+                            }
+                        }
 
-                        if (mensaje == "ERROR_DB")
-                            Resposta_Lbl.Invoke(delegado, new object[] { "No hay partidas de ese jugador en ese dia" });
-                        else
-                            Resposta_Lbl.Invoke(delegado, new object[] { "Los jugadores que jugaron ese día son: " + mensaje });
-                    break;
+                        if (numForm != -1)
+                        {
+                            Form2 f2 = Forms[numForm];
+                            f2.SetDados(D1, D2); // Actualiza los valores de los dados en el formulario
+                        }
+                        break;
 
-                    case 11: // RESPUESTA CONSULTA 11 : JUGADORES QUE GANARON EL DIA INTRODUCIDO POR TECLADO
-                        mensaje = trozos[1];
-                        delegado = new DelegadoParaEscribir(Update_Respuesta_Lbl);
+                    case 21: // GESTION ABANDONOS DE LA PARTIDA
+                        numPartida = Convert.ToInt16(trozos[1]);
+                        string P1 = trozos[2];
+                        string P2 = trozos[3];
+                        string P3 = trozos[4];
+                        string P4 = trozos[5];
 
-                        if (mensaje == "ERROR_DB")
-                            Resposta_Lbl.Invoke(delegado, new object[] { "No hay partidas de ese jugador en ese dia" });
-                        else
-                            Resposta_Lbl.Invoke(delegado, new object[] { "Los jugadores que ganaron ese día son: " + mensaje });
-                    break;
+                        numForm = -1;
+                        found = false;
+
+                        for (int i = 0; i < Forms.Count && !found; i++)
+                        {
+                            if (numPartida == Forms[i].GetPartidaNum())
+                            {
+                                numForm = Forms[i].GetFormNum();
+                                found = true;
+                            }
+                        }
+
+                        if (numForm != -1)
+                        {
+                            Form2 f2 = Forms[numForm];
+                            f2.QuitOut(P1, P2, P3, P4); // Actualiza el formulario con los jugadores que han salido
+                        }
+                        break;
 
                     case 12: // RESPUESTA CONSULTA 12 : DURACION TOTAL DE PARTIDAS GANADAS DE UN JUGADOR-NOMBRE INTRODUCIDO POR TECLADO
                         mensaje = trozos[1];
@@ -655,16 +652,12 @@ namespace WindowsFormsApplication1
                         delegado = new DelegadoParaEscribir(Update_Respuesta_Lbl);
                         resposta = "";
 
-                        if (mensaje == "ERROR_DB")
-                            Resposta_Lbl.Invoke(delegado, new object[] { "No hay partidas de ese jugador" });
-                        else
+                        for (int i = 1; i < trozos.Length - 1; i += 2)
                         {
-                            for (int i = 1; i < trozos.Length; i++)
-                            {
-                                resposta += trozos[i] + "\n";
-                            }
-                            Resposta_Lbl.Invoke(delegado, new object[] { resposta });
+                            resposta += "Partida: Jugadores: " + trozos[i] + " Vs : " + trozos[i + 1] + "\n";
                         }
+                        Resposta_Lbl.Invoke(delegado, new object[] { resposta });
+
                         break;
 
                     case 15: // RESPUESTA CONSULTA 15 : RESULTADO DE PARTIDAS JUGADAS CON UN JUGADOR-NOMBRE INTRODUCIDO POR TECLADO 
@@ -683,55 +676,6 @@ namespace WindowsFormsApplication1
                             Resposta_Lbl.Invoke(delegado, new object[] { resposta });
                         }
                         break;
-
-                    case 20: // GESTION DADOS DE LA PARTIDA
-                        numPartida = Convert.ToInt16(trozos[1]);
-                        int D1 = Convert.ToInt16(trozos[2]);
-                        int D2 = Convert.ToInt16(trozos[3]);
-                        numForm = -1;
-                        found = false;
-
-                        for (int i = 0; i < Forms.Count && !found; i++)
-                        {
-                            if (numPartida == Forms[i].GetPartidaNum())
-                            {
-                                numForm = Forms[i].GetFormNum();
-                                found = true;
-                            }
-                        }
-
-                        if (numForm != -1)
-                        {
-                            Form2 f2 = Forms[numForm];
-                            f2.SetDados(D1, D2); // Actualiza los valores de los dados en el formulario
-                        }
-                    break;
-
-                    case 21: // GESTION ABANDONOS DE LA PARTIDA
-                        numPartida = Convert.ToInt16(trozos[1]);
-                        string P1 = trozos[2];
-                        string P2 = trozos[3];
-                        string P3 = trozos[4];
-                        string P4 = trozos[5];
-
-                        numForm = -1;
-                        found = false;
-
-                        for (int i = 0; i < Forms.Count && !found; i++)
-                        {
-                            if (numPartida == Forms[i].GetPartidaNum())
-                            {
-                                numForm = Forms[i].GetFormNum();
-                                found = true;
-                            }
-                        }
-
-                        if (numForm != -1)
-                        {
-                            Form2 f2 = Forms[numForm];
-                            f2.QuitOut(P1, P2, P3, P4); // Actualiza el formulario con los jugadores que han salido
-                        }
-                    break;
                 }
             }
         }

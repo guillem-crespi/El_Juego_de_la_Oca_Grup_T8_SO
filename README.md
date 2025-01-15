@@ -9,6 +9,7 @@ Este proyecto es una implementación del clásico **Juego de la Oca**, desarroll
 - Roger Macià
 - Paula Katharina
 - Martí Claramunt
+- Video: https://drive.google.com/drive/folders/1hmsecKY427qneBZcdLFE-3Q0eeLOCtTq?usp=sharing
 
 ### **Versión 5**
 - Guillem Crespí
