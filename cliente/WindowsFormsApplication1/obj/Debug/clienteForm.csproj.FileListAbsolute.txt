@@ -358,3 +358,16 @@ C:\Users\polpo\OneDrive - Universitat Politècnica de Catalunya\Aplicacions\El_J
 C:\Users\polpo\OneDrive - Universitat Politècnica de Catalunya\Aplicacions\El_Juego_de_la_Oca_Grup_T8_SO\cliente\WindowsFormsApplication1\obj\Debug\clienteForm.csproj.CoreCompileInputs.cache
 C:\Users\polpo\OneDrive - Universitat Politècnica de Catalunya\Aplicacions\El_Juego_de_la_Oca_Grup_T8_SO\cliente\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.exe
 C:\Users\polpo\OneDrive - Universitat Politècnica de Catalunya\Aplicacions\El_Juego_de_la_Oca_Grup_T8_SO\cliente\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.pdb
+C:\Users\roger\OneDrive\Escriptori\Escola\Universitat\3.1\Sistemes Operatius\Projecte\El_Juego_de_la_Oca_Grup_T8_SO\cliente\WindowsFormsApplication1\bin\Debug\WindowsFormsApplication1.exe.config
+C:\Users\roger\OneDrive\Escriptori\Escola\Universitat\3.1\Sistemes Operatius\Projecte\El_Juego_de_la_Oca_Grup_T8_SO\cliente\WindowsFormsApplication1\bin\Debug\WindowsFormsApplication1.exe
+C:\Users\roger\OneDrive\Escriptori\Escola\Universitat\3.1\Sistemes Operatius\Projecte\El_Juego_de_la_Oca_Grup_T8_SO\cliente\WindowsFormsApplication1\bin\Debug\WindowsFormsApplication1.pdb
+C:\Users\roger\OneDrive\Escriptori\Escola\Universitat\3.1\Sistemes Operatius\Projecte\El_Juego_de_la_Oca_Grup_T8_SO\cliente\WindowsFormsApplication1\obj\Debug\clienteForm.csproj.AssemblyReference.cache
+C:\Users\roger\OneDrive\Escriptori\Escola\Universitat\3.1\Sistemes Operatius\Projecte\El_Juego_de_la_Oca_Grup_T8_SO\cliente\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.Form1.resources
+C:\Users\roger\OneDrive\Escriptori\Escola\Universitat\3.1\Sistemes Operatius\Projecte\El_Juego_de_la_Oca_Grup_T8_SO\cliente\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.Form2.resources
+C:\Users\roger\OneDrive\Escriptori\Escola\Universitat\3.1\Sistemes Operatius\Projecte\El_Juego_de_la_Oca_Grup_T8_SO\cliente\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.Form3.resources
+C:\Users\roger\OneDrive\Escriptori\Escola\Universitat\3.1\Sistemes Operatius\Projecte\El_Juego_de_la_Oca_Grup_T8_SO\cliente\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.Form4.resources
+C:\Users\roger\OneDrive\Escriptori\Escola\Universitat\3.1\Sistemes Operatius\Projecte\El_Juego_de_la_Oca_Grup_T8_SO\cliente\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.Properties.Resources.resources
+C:\Users\roger\OneDrive\Escriptori\Escola\Universitat\3.1\Sistemes Operatius\Projecte\El_Juego_de_la_Oca_Grup_T8_SO\cliente\WindowsFormsApplication1\obj\Debug\clienteForm.csproj.GenerateResource.cache
+C:\Users\roger\OneDrive\Escriptori\Escola\Universitat\3.1\Sistemes Operatius\Projecte\El_Juego_de_la_Oca_Grup_T8_SO\cliente\WindowsFormsApplication1\obj\Debug\clienteForm.csproj.CoreCompileInputs.cache
+C:\Users\roger\OneDrive\Escriptori\Escola\Universitat\3.1\Sistemes Operatius\Projecte\El_Juego_de_la_Oca_Grup_T8_SO\cliente\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.exe
+C:\Users\roger\OneDrive\Escriptori\Escola\Universitat\3.1\Sistemes Operatius\Projecte\El_Juego_de_la_Oca_Grup_T8_SO\cliente\WindowsFormsApplication1\obj\Debug\WindowsFormsApplication1.pdb
